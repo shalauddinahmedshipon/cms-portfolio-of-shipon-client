@@ -2,22 +2,14 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
   SquareTerminal,
+  LayoutDashboard,
+  User,
+  FolderKanban,
+  Image,
+  Users,
 } from "lucide-react"
 
-import { NavMain } from "@/components/modules/dashboard/nav-main"
-import { NavProjects } from "@/components/modules/dashboard/nav-projects"
-import { NavUser } from "@/components/modules/dashboard/nav-user"
-import { TeamSwitcher } from "@/components/modules/dashboard/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -26,150 +18,125 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+import { NavMain } from "./nav-main"
+import { NavUser } from "./nav-user"
+import { TeamSwitcher } from "./team-switcher"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+import { useAppSelector } from "@/store/hooks"
+import type { NavItem } from "@/types/navigation.types"
+
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+
+  // If not yet authenticated → show minimal / loading sidebar
+  if (!isAuthenticated) {
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader>
+          <div className="h-10 bg-muted animate-pulse rounded-md" /> {/* placeholder */}
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="space-y-4 p-4">
+            <div className="h-8 bg-muted animate-pulse rounded" />
+            <div className="h-8 bg-muted animate-pulse rounded" />
+          </div>
+        </SidebarContent>
+        <SidebarRail />
+      </Sidebar>
+    )
+  }
+  /* ---------------------------
+     User & Team Data
+  ---------------------------- */
+  const data = React.useMemo(
+    () => ({
+      user: {
+        name: user?.fullName ?? "MD.SHIPON",
+        email: user?.email ?? "shalauddinahmedshipon2018@gmail.com",
+        avatar: "/avatars/shadcn.jpg",
+      },
+      teams: [
+        {
+          name: "MD.SHIPON",
+          logo: SquareTerminal,
+          plan: "Software Engineer",
+        },
+      ],
+    }),
+    [user]
+  )
+
+  /* ---------------------------
+     Navigation (IMMUTABLE)
+  ---------------------------- */
+  const navMain: NavItem[] = React.useMemo(() => {
+    const baseNav: NavItem[] = [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+      },
+      {
+        title: "Profile",
+        icon: User,
+        items: [
+          { title: "Profile Info", url: "/dashboard/profile/general" },
+          { title: "Contact Info", url: "/dashboard/profile/contact" },
+          { title: "Coding Profiles", url: "/dashboard/profile/coding-profiles" },
+          { title: "Education", url: "/dashboard/profile/education" },
+          { title: "Experience", url: "/dashboard/profile/experience" },
+          { title: "Skills", url: "/dashboard/profile/skills" },
+        ],
+      },
+      {
+        title: "Content",
+        icon: FolderKanban,
+        items: [
+          { title: "Projects", url: "/dashboard/content/projects" },
+          { title: "Blogs", url: "/dashboard/content/blogs" },
+          { title: "Events", url: "/dashboard/content/events" },
+          { title: "Achievements", url: "/dashboard/content/achievements" },
+        ],
+      },
+      {
+        title: "Media",
+        icon: Image,
+        items: [{ title: "Gallery", url: "/dashboard/media/gallery" }],
+      },
+    ]
+
+    // ✅ Role-based nav (NO mutation)
+    if (user?.role === "ADMIN") {
+      baseNav.push({
+        title: "Users",
+        url: "/dashboard/users",
+        icon: Users,
+      })
+    }
+
+    return baseNav
+  }, [user?.role])
+
+  /* ---------------------------
+     Render
+  ---------------------------- */
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={navMain} />
       </SidebarContent>
+
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   )
 }
+
+

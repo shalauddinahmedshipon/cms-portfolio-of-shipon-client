@@ -6,8 +6,7 @@ export const authApi = baseApi.injectEndpoints({
       query: (credentials) => ({
         url: "/auth/login",
         method: "POST",
-        body: credentials,
-        credentials: "include",
+        body: credentials
       }),
       transformResponse: (response: any) => ({
         user: response.data.user,
@@ -18,11 +17,17 @@ export const authApi = baseApi.injectEndpoints({
     getMe: builder.query({
       query: () => ({
         url: "/auth/me",
-        method: "GET",
-        credentials: "include",
+        method: "GET"
+      }),
+      transformResponse: (response: any) => response.data,
+    }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST"
       }),
     }),
   }),
 });
 
-export const { useLoginMutation, useGetMeQuery } = authApi;
+export const { useLoginMutation, useGetMeQuery,useLogoutMutation } = authApi;

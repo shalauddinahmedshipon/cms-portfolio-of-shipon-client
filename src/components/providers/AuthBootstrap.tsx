@@ -1,23 +1,37 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useGetMeQuery } from "@/store/api/auth.api";
-import { useAppDispatch } from "@/store/hooks";
-import { setCredentials, logout } from "@/store/slices/auth.slice";
+import { useEffect, useState } from "react"
+import { useGetMeQuery } from "@/store/api/auth.api"
+import { useAppDispatch } from "@/store/hooks"
+import { setCredentials, logout } from "@/store/slices/auth.slice"
 
 export default function AuthBootstrap() {
-  const dispatch = useAppDispatch();
-  const { data, isError } = useGetMeQuery(undefined);
+  const dispatch = useAppDispatch()
+  const [isChecking, setIsChecking] = useState(true) // ← NEW: track initial check
+
+  const { data, error, isLoading } = useGetMeQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
 
   useEffect(() => {
+    if (isLoading) return // wait for query
+
     if (data) {
-      dispatch(setCredentials({ user: data }));
+      dispatch(setCredentials({ user: data }))
     }
 
-    if (isError) {
-      dispatch(logout());
+    if (error && "status" in error && error.status === 401) {
+      dispatch(logout())
     }
-  }, [data, isError, dispatch]);
 
-  return null;
+    // Once query settles (success or error) → done checking
+    setIsChecking(false)
+  }, [data, error, isLoading, dispatch])
+
+  // Return null during initial check (prevents flash of wrong UI)
+  if (isChecking || isLoading) {
+    return null // or a small spinner if you want
+  }
+
+  return null
 }
