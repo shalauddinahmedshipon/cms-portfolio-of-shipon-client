@@ -8,6 +8,10 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body: credentials,
       }),
+       transformResponse: (response: any) => ({
+        user: response.data.user,
+        accessToken: response.data.access_token,
+      }),
     }),
   }),
 });
