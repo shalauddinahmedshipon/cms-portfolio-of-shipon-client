@@ -48,7 +48,6 @@ export default function LoginForm() {
 
       dispatch(
         setCredentials({
-          accessToken: res.accessToken,
           user: res.user,
         })
       );
@@ -58,7 +57,8 @@ export default function LoginForm() {
 
       router.push("/dashboard");
     } catch (err: any) {
-     toast.error("Invalid credentials");
+
+  toast.error(err?.data?.message ?? "Invalid credentials");
 
     }
   };
@@ -124,7 +124,7 @@ export default function LoginForm() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full mt-3 py-4"
               disabled={isLoading}
             >
               {isLoading && (
