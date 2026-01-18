@@ -25,14 +25,14 @@ export interface ContactInfo {
   profileId: string
 }
 
-export interface CodingProfile {
+// src/types/profile.types.ts
+export type CodingProfile = {
   id: string
   platform: string
   username: string
-  profileUrl?: string
-  iconUrl?: string
+  profileUrl?: string   // <-- optional
   rating?: number
   badge?: string
   highlight: boolean
-  profileId: string
+  iconUrl?: string
 }

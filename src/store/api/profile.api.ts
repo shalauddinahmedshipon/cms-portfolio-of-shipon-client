@@ -1,20 +1,27 @@
 // src/store/api/profile.api.ts
-import { TAGS } from "@/types/api.tags";
+import { TAGS } from "@/types/api.tags"
 import { baseApi } from "./baseApi"
 
-import type { Profile, ContactInfo, CodingProfile } from "@/types/profile.types"
-import { ApiResponse } from "@/types/api.response.types";
+import type {
+  Profile,
+  ContactInfo,
+  CodingProfile,
+} from "@/types/profile.types"
+
+import type { ApiResponse } from "@/types/api.response.types"
 
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // ── Profile ───────────────────────────────
-   
-  getProfile: builder.query<Profile, void>({
-  query: () => "/profile",
-  transformResponse: (response: ApiResponse<Profile>) => response.data,
-   providesTags: [TAGS.PROFILE],
-}),
+    getProfile: builder.query<Profile, void>({
+      query: () => "/profile",
 
+      transformResponse: (
+        response: ApiResponse<Profile>
+      ) => response.data,
+
+      providesTags: [TAGS.PROFILE],
+    }),
 
     updateProfile: builder.mutation<Profile, FormData>({
       query: (formData) => ({
@@ -22,6 +29,11 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: formData,
       }),
+
+      transformResponse: (
+        response: ApiResponse<Profile>
+      ) => response.data,
+
       invalidatesTags: [TAGS.PROFILE],
     }),
 
@@ -34,12 +46,22 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
+
+      transformResponse: (
+        response: ApiResponse<ContactInfo>
+      ) => response.data,
+
       invalidatesTags: [TAGS.PROFILE],
     }),
 
     // ── Coding Profiles ───────────────────────
     getCodingProfiles: builder.query<CodingProfile[], void>({
       query: () => "/profile/coding-profiles",
+
+      transformResponse: (
+        response: ApiResponse<CodingProfile[]>
+      ) => response.data,
+
       providesTags: (result) =>
         result
           ? [
@@ -58,7 +80,14 @@ export const profileApi = baseApi.injectEndpoints({
         method: "POST",
         body: formData,
       }),
-      invalidatesTags: [{ type: TAGS.CODING_PROFILE, id: "LIST" }],
+
+      transformResponse: (
+        response: ApiResponse<CodingProfile>
+      ) => response.data,
+
+      invalidatesTags: [
+        { type: TAGS.CODING_PROFILE, id: "LIST" },
+      ],
     }),
 
     updateCodingProfile: builder.mutation<
@@ -70,6 +99,11 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
+
+      transformResponse: (
+        response: ApiResponse<CodingProfile>
+      ) => response.data,
+
       invalidatesTags: (_result, _error, { id }) => [
         { type: TAGS.CODING_PROFILE, id },
         { type: TAGS.CODING_PROFILE, id: "LIST" },
@@ -81,11 +115,25 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profile/coding-profiles/${id}`,
         method: "DELETE",
       }),
+
       invalidatesTags: (_result, _error, id) => [
         { type: TAGS.CODING_PROFILE, id },
         { type: TAGS.CODING_PROFILE, id: "LIST" },
       ],
     }),
+
+    reorderCodingProfiles: builder.mutation<
+  void,
+  { id: string; order: number }[]
+>({
+  query: (body) => ({
+    url: "/profile/coding-profiles/reorder",
+    method: "PATCH",
+    body,
+  }),
+  invalidatesTags: [{ type: TAGS.CODING_PROFILE, id: "LIST" }],
+}),
+
   }),
 })
 
@@ -97,4 +145,5 @@ export const {
   useCreateCodingProfileMutation,
   useUpdateCodingProfileMutation,
   useDeleteCodingProfileMutation,
+  useReorderCodingProfilesMutation
 } = profileApi
