@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -6,6 +7,7 @@ import { z } from "zod"
 import Image from "next/image"
 import { toast } from "sonner"
 import { User, ImageIcon, Camera } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 import {
   useGetProfileQuery,
@@ -40,14 +42,11 @@ const DEFAULT_VALUES: FormValues = {
 
 export default function GeneralProfilePage() {
   /* -------------------------------- API -------------------------------- */
-  const { data:profile, isLoading } = useGetProfileQuery(undefined, {
+  const { data: profile, isLoading } = useGetProfileQuery(undefined, {
     refetchOnMountOrArgChange: true,
   })
 
-  
-
-  const [updateProfile, { isLoading: isUpdating }] =
-    useUpdateProfileMutation()
+  const [updateProfile] = useUpdateProfileMutation()
 
   /* -------------------------------- FORM -------------------------------- */
   const form = useForm<FormValues>({
@@ -115,6 +114,7 @@ export default function GeneralProfilePage() {
 
     try {
       setUploadProgress(10)
+
       const interval = setInterval(() => {
         setUploadProgress((p) => (p < 90 ? p + 10 : p))
       }, 300)
@@ -123,11 +123,11 @@ export default function GeneralProfilePage() {
 
       clearInterval(interval)
       setUploadProgress(100)
+
       setTimeout(() => setUploadProgress(0), 600)
 
       setAvatarFile(null)
       setBannerFile(null)
-
       form.reset(values)
 
       toast.success("Profile updated successfully")
@@ -160,7 +160,7 @@ export default function GeneralProfilePage() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-        {/* Banner */}
+        {/* ================= Banner ================= */}
         <div className="relative">
           <div className="relative h-48 w-full rounded-xl overflow-hidden bg-muted flex items-center justify-center">
             {optimisticProfile?.bannerUrl ? (
@@ -187,7 +187,7 @@ export default function GeneralProfilePage() {
             </label>
           </div>
 
-          {/* Avatar */}
+          {/* ================= Avatar ================= */}
           <div className="absolute -bottom-10 left-6">
             <div className="relative size-24 rounded-full border-4 border-background overflow-hidden bg-muted flex items-center justify-center">
               {optimisticProfile?.avatarUrl ? (
@@ -216,7 +216,7 @@ export default function GeneralProfilePage() {
           </div>
         </div>
 
-        {/* Form */}
+        {/* ================= Form ================= */}
         <div className="pt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
           {(
             ["name", "designation", "headline", "location", "resumeUrl"] as const
@@ -254,20 +254,41 @@ export default function GeneralProfilePage() {
           />
         </div>
 
-        {uploadProgress > 0 && (
-          <Progress value={uploadProgress} />
-        )}
+        {/* ================= Footer ================= */}
+        <div className="space-y-4">
+          <AnimatePresence>
+            {uploadProgress > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <Progress value={uploadProgress} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div className="flex justify-between items-center">
-          {form.formState.isDirty && (
-            <span className="text-sm text-yellow-600">
-              You have unsaved changes
-            </span>
-          )}
+          <AnimatePresence>
+            {uploadProgress === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-between items-center"
+              >
+                {form.formState.isDirty && (
+                  <span className="text-sm text-yellow-600">
+                    You have unsaved changes
+                  </span>
+                )}
 
-          <Button type="submit" disabled={isUpdating}>
-            {isUpdating ? "Saving..." : "Save Changes"}
-          </Button>
+                <Button type="submit">
+                  Save Changes
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </form>
     </Form>
