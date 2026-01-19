@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Trash2, Edit2 } from "lucide-react"
+import { Plus, Loader2 } from "lucide-react"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import {
@@ -17,7 +18,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,6 @@ import { useAsyncModalForm } from "@/hooks/useAsyncModalForm"
 import { ImageUpload } from "@/components/shared/ImageUpload"
 import { ExperienceTimeline } from "@/components/modules/experience/ExperienceTimeline"
 import { buildExperienceFormData } from "@/lib/helpers/build-formdata"
-
 
 /* ---------------------------------------------------------------- */
 
@@ -54,16 +53,18 @@ export default function ExperiencePage() {
 
   const [items, setItems] = useState<Experience[]>([])
   const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  /* ------------------ MODAL FORM HOOK ------------------ */
+  /* ------------------ MODAL FORM ------------------ */
   const form = useAsyncModalForm<Partial<Experience>>({
     initialData: EMPTY,
 
     onCreate: async (data) => {
-     const fd = buildExperienceFormData(data, logoFile)
+      const fd = buildExperienceFormData(data, logoFile)
       const saved = await createExperience(fd).unwrap()
       setItems((prev) => [saved, ...prev])
       setLogoFile(null)
+      toast.success("Experience added")
     },
 
     onUpdate: async (data) => {
@@ -77,6 +78,7 @@ export default function ExperiencePage() {
         prev.map((i) => (i.id === saved.id ? saved : i)),
       )
       setLogoFile(null)
+      toast.success("Experience updated")
     },
   })
 
@@ -86,14 +88,25 @@ export default function ExperiencePage() {
   }, [data])
 
   /* ---------------------- DELETE ---------------------- */
-  const remove = async (id: string) => {
-    try {
-      await deleteExperience(id).unwrap()
-      setItems((prev) => prev.filter((i) => i.id !== id))
-      toast.success("Deleted")
-    } catch {
-      toast.error("Delete failed")
-    }
+  const remove = (id: string) => {
+    toast("Delete experience?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Confirm",
+        onClick: async () => {
+          try {
+            setDeletingId(id)
+            await deleteExperience(id).unwrap()
+            setItems((prev) => prev.filter((i) => i.id !== id))
+            toast.success("Experience deleted")
+          } catch {
+            toast.error("Delete failed")
+          } finally {
+            setDeletingId(null)
+          }
+        },
+      },
+    })
   }
 
   /* ---------------------- LOADING ---------------------- */
@@ -107,6 +120,13 @@ export default function ExperiencePage() {
     )
   }
 
+  /* ---------------------- SORT ---------------------- */
+  const sortedItems = [...items].sort((a, b) => {
+    const aTime = a.startDate ? new Date(a.startDate).getTime() : 0
+    const bTime = b.startDate ? new Date(b.startDate).getTime() : 0
+    return bTime - aTime
+  })
+
   /* ---------------------- UI ---------------------- */
   return (
     <div className="space-y-6">
@@ -118,30 +138,22 @@ export default function ExperiencePage() {
         </Button>
       </div>
 
-  
-{/* Timeline */}
-<ExperienceTimeline
-  items={[...items].sort((a, b) => {
-    const aTime = a.startDate
-      ? new Date(a.startDate).getTime()
-      : 0
-
-    const bTime = b.startDate
-      ? new Date(b.startDate).getTime()
-      : 0
-
-    return bTime - aTime
-  })}
-  onEdit={(e) => {
-    form.openEdit(e)
-    setLogoFile(null)
-  }}
-  onDelete={remove}
-/>
-
+      {/* Timeline */}
+      <ExperienceTimeline
+        items={sortedItems}
+        deletingId={deletingId}
+        onEdit={(e) => {
+          form.openEdit(e)
+          setLogoFile(null)
+        }}
+        onDelete={remove}
+      />
 
       {/* Modal */}
-      <Dialog open={form.open} onOpenChange={form.close}>
+      <Dialog
+        open={form.open}
+        onOpenChange={(v) => !form.loading && form.close()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -244,19 +256,31 @@ export default function ExperiencePage() {
               }
             />
 
-            {/* Image Upload with Preview */}
+            {/* Image Upload */}
             <ImageUpload
               file={logoFile}
               preview={form.active?.companyLogo}
               onChange={setLogoFile}
             />
 
+            {/* Save */}
             <Button
               onClick={form.submit}
               disabled={form.loading}
               className="w-full"
             >
-              {form.loading ? "Saving..." : "Save"}
+              {form.loading ? (
+                <motion.span
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <Loader2 className="size-4 animate-spin" />
+                  Saving...
+                </motion.span>
+              ) : (
+                "Save"
+              )}
             </Button>
           </div>
         </DialogContent>

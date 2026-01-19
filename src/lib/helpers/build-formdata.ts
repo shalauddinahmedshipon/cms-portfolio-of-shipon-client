@@ -1,6 +1,6 @@
 import type { Education } from "@/types/education.types"
 import type { Experience } from "@/types/experience.types"
-
+import type { Skill } from "@/types/skill.types"
 /* ───────── EDUCATION ───────── */
 
 export function buildEducationFormData(
@@ -53,3 +53,6 @@ export function buildExperienceFormData(
 
   return fd
 }
+
+
+
