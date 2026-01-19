@@ -8,6 +8,7 @@ import {
   Star,
   GripVertical,
   Upload,
+  Edit2Icon,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -294,7 +295,7 @@ export default function CodingProfilePage() {
                       setOpen(true)
                     }}
                   >
-                    Edit
+                   <Edit2Icon/>
                   </Button>
 
                   <Button
