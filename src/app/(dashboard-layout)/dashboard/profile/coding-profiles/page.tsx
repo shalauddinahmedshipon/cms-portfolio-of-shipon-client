@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Reorder } from "framer-motion"
+import { Reorder, motion } from "framer-motion"
 import {
   Plus,
   Trash2,
@@ -9,6 +9,7 @@ import {
   GripVertical,
   Upload,
   Edit2Icon,
+  Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -47,12 +48,12 @@ const EMPTY_PROFILE: Partial<CodingProfile> = {
 
 /* ----------------------- HELPERS ----------------------- */
 
-// Visual only (does NOT affect order persistence)
 function applyHighlightPin(items: CodingProfile[]) {
-  return [...items].sort((a, b) => Number(b.highlight) - Number(a.highlight))
+  return [...items].sort(
+    (a, b) => Number(b.highlight) - Number(a.highlight),
+  )
 }
 
-// Convert rendered order → source order
 function restoreSourceOrder(
   rendered: CodingProfile[],
   source: CodingProfile[],
@@ -61,7 +62,6 @@ function restoreSourceOrder(
   return rendered.map((i) => map.get(i.id)!)
 }
 
-// Build DTO-safe FormData
 function buildFormData(
   profile: Partial<CodingProfile>,
   iconFile?: File | null,
@@ -94,10 +94,16 @@ function buildFormData(
 export default function CodingProfilePage() {
   const { data, isLoading } = useGetCodingProfilesQuery()
 
-  const [createProfile] = useCreateCodingProfileMutation()
-  const [updateProfile] = useUpdateCodingProfileMutation()
+  const [createProfile, { isLoading: isCreating }] =
+    useCreateCodingProfileMutation()
+
+  const [updateProfile, { isLoading: isUpdating }] =
+    useUpdateCodingProfileMutation()
+
   const [deleteProfile] = useDeleteCodingProfileMutation()
   const [reorderProfiles] = useReorderCodingProfilesMutation()
+
+  const isSaving = isCreating || isUpdating
 
   const [profiles, setProfiles] = useState<CodingProfile[]>([])
   const previousOrder = useRef<CodingProfile[]>([])
@@ -183,11 +189,11 @@ export default function CodingProfilePage() {
       setIconFile(null)
       toast.success("Profile saved")
     } catch (err: any) {
-      const msg =
+      toast.error(
         err?.data?.message?.[0] ||
-        err?.data?.message ||
-        "Failed to save profile"
-      toast.error(msg)
+          err?.data?.message ||
+          "Failed to save profile",
+      )
     }
   }
 
@@ -207,7 +213,7 @@ export default function CodingProfilePage() {
     return (
       <div className="space-y-3">
         {[1, 2].map((i) => (
-          <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          <Skeleton key={i} className="h-16 rounded-lg" />
         ))}
       </div>
     )
@@ -238,43 +244,39 @@ export default function CodingProfilePage() {
         onReorder={onReorder}
         className="space-y-2"
       >
-        {renderedProfiles.map((p, index) => (
+        {renderedProfiles.map((p) => (
           <Reorder.Item
             key={p.id}
             value={p}
-            tabIndex={0}
             className="focus:outline-none"
           >
-            <Card className="hover:shadow-sm transition">
-              <CardContent className="flex items-center justify-between px-3 py-2">
-                <div className="flex items-center gap-3 min-w-0">
+            <Card>
+              <CardContent className="flex items-center justify-between px-3">
+                <div className="flex items-center gap-6 min-w-0">
                   <GripVertical className="size-4 text-muted-foreground cursor-grab" />
 
                   {p.iconUrl && (
                     <img
                       src={p.iconUrl}
                       alt={p.platform}
-                      className="size-8 rounded-md"
+                      className="size-16 rounded-md"
                     />
                   )}
 
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 text-lg min-w-0">
                     <span className="font-medium truncate">
                       {p.platform}
                     </span>
-
                     <span className="text-muted-foreground truncate">
                       @{p.username}
                     </span>
 
                     {p.rating && (
-                      <span className="text-xs text-muted-foreground">
-                        • {p.rating}
-                      </span>
+                      <span className="text-xs">• {p.rating}</span>
                     )}
 
                     {p.badge && (
-                      <span className="text-xs bg-muted px-2 py-0.5 rounded">
+                      <span className="text-xs bg-muted px-2 rounded">
                         {p.badge}
                       </span>
                     )}
@@ -295,7 +297,7 @@ export default function CodingProfilePage() {
                       setOpen(true)
                     }}
                   >
-                   <Edit2Icon/>
+                    <Edit2Icon />
                   </Button>
 
                   <Button
@@ -313,7 +315,12 @@ export default function CodingProfilePage() {
       </Reorder.Group>
 
       {/* Modal */}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!isSaving) setOpen(v)
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -391,8 +398,32 @@ export default function CodingProfilePage() {
               </span>
             </div>
 
-            <Button onClick={saveProfile} className="w-full">
-              Save
+            <Button
+              onClick={saveProfile}
+              disabled={isSaving}
+              className="w-full"
+            >
+              {isSaving ? (
+                <motion.div
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 0.8,
+                      ease: "linear",
+                    }}
+                  >
+                    <Loader2 className="size-4" />
+                  </motion.div>
+                  Saving...
+                </motion.div>
+              ) : (
+                "Save"
+              )}
             </Button>
           </div>
         </DialogContent>

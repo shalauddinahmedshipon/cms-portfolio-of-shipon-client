@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 
-import { buildEducationFormData } from "@/lib/helpers/build-education-formdata"
+import { buildEducationFormData } from "@/lib/helpers/build-formdata"
 
 /* ------------------------------------------------------------------ */
 

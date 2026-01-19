@@ -30,3 +30,4 @@ export async function uploadFileWithProgress(
     xhr.send(formData)
   })
 }
+
