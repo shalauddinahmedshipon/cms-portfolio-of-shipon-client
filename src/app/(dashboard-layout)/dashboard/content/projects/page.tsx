@@ -195,7 +195,10 @@ export default function AdminProjectsPage() {
               Reorder
             </Button>
 
-            <Button onClick={() => setOpenForm(true)}>
+            <Button onClick={() => {
+    setSelectedProject(null) // ✅ VERY IMPORTANT
+    setOpenForm(true)
+  }}>
               <Plus className="mr-1 size-4" />
               Add Project
             </Button>
