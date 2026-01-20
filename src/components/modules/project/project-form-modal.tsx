@@ -483,26 +483,91 @@ export default function ProjectFormModal({ open, onClose, project }: Props) {
       buttons:
         "bold,italic,underline,strikethrough,|,ul,ol,|,font,fontsize,|,align,|,link,image,|,undo,redo,|",
       extraButtons: [enterFullscreenButton],
+      image: {
+      resize: true,
+      resizeUseAspectRatio: true,
+      caption: true,
+      openOnDblClick: true,
+    },
+
+   uploader: {
+  url: `${process.env.NEXT_PUBLIC_API_URL}/gallery/editor-image`,
+  method: "POST",
+  filesVariableName: () => "files",
+  withCredentials: false,
+
+  isSuccess: (resp: any) => !!resp.files?.length,
+
+  process: (resp: any) => ({
+    files: resp.files,
+    path: "",
+    baseurl: "",
+    error: 0,
+  }),
+
+  defaultHandlerSuccess: function (this: any, data: any) {
+    if (!data.files?.length) return
+
+    data.files.forEach((url: string) => {
+      this.s.insertImage(url)
+    })
+  },
+},
     }),
     []
   )
 
-  const fullscreenConfig = useMemo(
-    () => ({
-      readonly: false,
-      height: "100vh",
-      toolbarAdaptive: false,
-      toolbarSticky: false,
-      zIndex: 10002,
-      showCharsCounter: false,
-      showWordsCounter: false,
-      askBeforePasteHTML: false,
-      buttons:
-        "bold,italic,underline,strikethrough,|,ul,ol,|,font,fontsize,|,align,|,link,image,table,|,undo,redo,|,source,|",
-      extraButtons: [exitFullscreenButton],
-    }),
-    []
-  )
+
+const fullscreenConfig = useMemo(
+  () => ({
+    readonly: false,
+    height: "100vh",
+    toolbarAdaptive: false,
+    toolbarSticky: false,
+    zIndex: 10002,
+    showCharsCounter: false,
+    showWordsCounter: false,
+    askBeforePasteHTML: false,
+    buttons:
+      "bold,italic,underline,strikethrough,|,ul,ol,|,font,fontsize,|,align,|,link,image,table,|,undo,redo,|,source,|",
+    extraButtons: [exitFullscreenButton],
+
+    image: {
+      resize: true,
+      resizeUseAspectRatio: true,
+      caption: true,
+      openOnDblClick: true,
+    },
+
+   uploader: {
+  url: `${process.env.NEXT_PUBLIC_API_URL}/gallery/editor-image`,
+  method: "POST",
+  filesVariableName: () => "files",
+  withCredentials: false,
+
+  isSuccess: (resp: any) => !!resp.files?.length,
+
+  process: (resp: any) => ({
+    files: resp.files,
+    path: "",
+    baseurl: "",
+    error: 0,
+  }),
+
+  defaultHandlerSuccess: function (this: any, data: any) {
+    if (!data.files?.length) return
+
+    data.files.forEach((url: string) => {
+      this.s.insertImage(url)
+    })
+  },
+},
+
+
+  }),
+  []
+)
+
 
   /* -------------------------------------------------------------------------- */
   /*                          LOAD PROJECT (EDIT MODE)                           */
@@ -688,80 +753,80 @@ export default function ProjectFormModal({ open, onClose, project }: Props) {
               </div>
             </div>
 
-            {/* IMAGE UPLOAD */}
-            <div className="space-y-4">
-              <Label>Project Images</Label>
+           {/* IMAGE UPLOAD */}
+<div className="space-y-4">
+  <Label>Project Images</Label>
 
-              {existingImages.length > 0 && (
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-                  {existingImages.map((url) => (
-                    <div
-                      key={url}
-                      className="relative group rounded-md overflow-hidden border"
-                    >
-                      <img
-                        src={url}
-                        className="h-24 w-full object-cover"
-                      />
-                      <button
-                        onClick={() => {
-                          setExistingImages((prev) =>
-                            prev.filter((img) => img !== url),
-                          )
-                          setRemovedImages((prev) => [...prev, url])
-                        }}
-                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+  {/* IMAGES GRID (OLD + NEW TOGETHER) */}
+  {(existingImages.length > 0 || images.length > 0) && (
+    <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+      {/* EXISTING IMAGES */}
+      {existingImages.map((url) => (
+        <div
+          key={url}
+          className="relative group rounded-md overflow-hidden border"
+        >
+          <img
+            src={url}
+            className="h-24 w-full object-cover"
+          />
+          <button
+            onClick={() => {
+              setExistingImages((prev) =>
+                prev.filter((img) => img !== url),
+              )
+              setRemovedImages((prev) => [...prev, url])
+            }}
+            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ))}
 
-              <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer hover:bg-muted transition">
-                <Upload className="h-6 w-6 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Click or drag images here
-                </span>
-                <input
-                  type="file"
-                  hidden
-                  multiple
-                  accept="image/*"
-                  onChange={(e) =>
-                    setImages((prev) => [
-                      ...prev,
-                      ...Array.from(e.target.files ?? []),
-                    ])
-                  }
-                />
-              </label>
+      {/* NEW IMAGES */}
+      {images.map((img, idx) => (
+        <div
+          key={idx}
+          className="relative group rounded-md overflow-hidden border"
+        >
+          <img
+            src={URL.createObjectURL(img)}
+            className="h-24 w-full object-cover"
+          />
+          <button
+            onClick={() =>
+              setImages(images.filter((_, i) => i !== idx))
+            }
+            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
 
-              {images.length > 0 && (
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-                  {images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="relative group rounded-md overflow-hidden border"
-                    >
-                      <img
-                        src={URL.createObjectURL(img)}
-                        className="h-24 w-full object-cover"
-                      />
-                      <button
-                        onClick={() =>
-                          setImages(images.filter((_, i) => i !== idx))
-                        }
-                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+  {/* UPLOAD AREA */}
+  <label className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer hover:bg-muted transition">
+    <Upload className="h-6 w-6 text-muted-foreground" />
+    <span className="text-sm text-muted-foreground">
+      Click or drag images here
+    </span>
+    <input
+      type="file"
+      hidden
+      multiple
+      accept="image/*"
+      onChange={(e) =>
+        setImages((prev) => [
+          ...prev,
+          ...Array.from(e.target.files ?? []),
+        ])
+      }
+    />
+  </label>
+</div>
 
             {/* ACTION */}
             <div className="pt-6">
