@@ -91,7 +91,23 @@ export default function AdminProjectsPage() {
     }
   }, [search, category, status, favorite, isReordering])
 
-  if (isLoading && !isFetching) return <Skeleton className="h-40" />
+  /* ---------------- PAGE LOADING SKELETON ---------------- */
+  if (isLoading && !isFetching) {
+    return (
+      <div className="space-y-5">
+        <Skeleton className="h-8 w-48" />
+
+        <div className="flex flex-wrap gap-4">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-36" />
+          <Skeleton className="h-10 w-36" />
+          <Skeleton className="h-10 w-36" />
+        </div>
+
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
 
   /* ---------------- TOGGLES ---------------- */
   const toggleFavorite = async (p: any) => {
@@ -195,10 +211,12 @@ export default function AdminProjectsPage() {
               Reorder
             </Button>
 
-            <Button onClick={() => {
-    setSelectedProject(null) // ✅ VERY IMPORTANT
-    setOpenForm(true)
-  }}>
+            <Button
+              onClick={() => {
+                setSelectedProject(null)
+                setOpenForm(true)
+              }}
+            >
               <Plus className="mr-1 size-4" />
               Add Project
             </Button>
@@ -227,7 +245,6 @@ export default function AdminProjectsPage() {
       {/* FILTERS */}
       {!isReordering && (
         <div className="flex flex-wrap gap-4 items-end">
-          {/* SEARCH */}
           <div className="flex-1 min-w-[220px] relative">
             <label className="text-xs text-muted-foreground mb-1 block">
               Search
@@ -240,7 +257,6 @@ export default function AdminProjectsPage() {
             />
           </div>
 
-          {/* CATEGORY */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Category</label>
             <Select value={category} onValueChange={setCategory}>
@@ -255,7 +271,6 @@ export default function AdminProjectsPage() {
             </Select>
           </div>
 
-          {/* STATUS */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Status</label>
             <Select value={status} onValueChange={setStatus}>
@@ -270,7 +285,6 @@ export default function AdminProjectsPage() {
             </Select>
           </div>
 
-          {/* FAVORITE */}
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Favorite</label>
             <Select value={favorite} onValueChange={setFavorite}>
@@ -284,7 +298,6 @@ export default function AdminProjectsPage() {
             </Select>
           </div>
 
-          {/* RESET */}
           <Button
             variant="ghost"
             size="icon"
@@ -302,8 +315,10 @@ export default function AdminProjectsPage() {
       ) : (
         <>
           {isFetching && (
-            <div className="text-center py-4 text-muted-foreground">
-              Loading...
+            <div className="space-y-2 py-2">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
             </div>
           )}
 
@@ -322,7 +337,6 @@ export default function AdminProjectsPage() {
             onToggleActive={toggleActive}
           />
 
-          {/* PAGINATION */}
           <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
             <Button
               variant="outline"
