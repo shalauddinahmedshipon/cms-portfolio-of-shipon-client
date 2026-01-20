@@ -1,190 +1,225 @@
 "use client"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { Reorder } from "framer-motion"
-import {
-  Plus,
-  GripVertical,
-  Edit,
-  Trash2,
-  ArrowUpDown,
-  Save,
-  X,
-} from "lucide-react"
+
+import { useEffect, useRef, useState } from "react"
+import { ArrowUpDown, Plus, Save, X } from "lucide-react"
 import { toast } from "sonner"
 
 import {
   useGetProjectsQuery,
-  useDeleteProjectMutation,
   useReorderProjectsMutation,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
 } from "@/store/api/project.api"
 
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import ProjectsTable from "@/components/modules/project/project-table"
+import ProjectsReorderList from "@/components/modules/project/ProjectsReorderList"
 import ProjectFormModal from "@/components/modules/project/project-form-modal"
-
+import ProjectViewModal from "@/components/modules/project/ProjectViewModal"
 
 export default function AdminProjectsPage() {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
   const [isReordering, setIsReordering] = useState(false)
+  const [openForm, setOpenForm] = useState(false)
+  const [openView, setOpenView] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<any>(null)
+
+  const [projects, setProjects] = useState<any[]>([])
   const previousOrder = useRef<any[]>([])
 
   const { data, isLoading } = useGetProjectsQuery({
     page: isReordering ? 1 : page,
     limit: isReordering ? 1000 : 10,
+    search,
   })
 
+  const [reorderProjects] = useReorderProjectsMutation()
+  const [updateProject] = useUpdateProjectMutation()
   const [deleteProject] = useDeleteProjectMutation()
-  const [reorderProjects, { isLoading: savingOrder }] =
-    useReorderProjectsMutation()
-
-  const [projects, setProjects] = useState<any[]>([])
-  const [openForm, setOpenForm] = useState(false)
-  const [active, setActive] = useState<any>(null)
 
   useEffect(() => {
-    if (data?.data) {
-      const sorted = [...data.data].sort(
-        (a, b) => (a.serialNo ?? 0) - (b.serialNo ?? 0),
-      )
-      setProjects(sorted)
+    if (!isReordering && data?.data) {
+      setProjects(data.data)
     }
-  }, [data])
+  }, [data, isReordering])
 
- const onSaveReorder = async () => {
-  try {
-    await reorderProjects({
-      ids: projects.map((p) => p.id),
-    }).unwrap()
+  if (isLoading) return <Skeleton className="h-40" />
 
-    setIsReordering(false)
-    toast.success("Project order saved")
-  } catch {
-    setProjects(previousOrder.current)
-    toast.error("Failed to reorder")
+  /* ---------------- TOGGLES ---------------- */
+
+  const toggleFavorite = async (p: any) => {
+    try {
+      const fd = new FormData()
+      fd.append("isFavorite", String(!p.isFavorite))
+      fd.append("isActive", String(p.isActive))
+      await updateProject({ id: p.id, data: fd }).unwrap()
+      toast.success("Favorite updated")
+    } catch {
+      toast.error("Failed to update favorite")
+    }
   }
-}
 
+  const toggleActive = async (p: any) => {
+    try {
+      const fd = new FormData()
+      fd.append("isActive", String(!p.isActive))
+      fd.append("isFavorite", String(p.isFavorite))
+      await updateProject({ id: p.id, data: fd }).unwrap()
+      toast.success("Status updated")
+    } catch {
+      toast.error("Failed to update status")
+    }
+  }
 
-  if (isLoading) {
-    return <Skeleton className="h-40 w-full" />
+  /* ---------------- DELETE ---------------- */
+
+  const confirmDelete = (p: any) => {
+    toast.custom((t) => (
+      <div className="rounded-lg border bg-background p-4 w-[320px]">
+        <h4 className="font-semibold mb-2">Delete Project</h4>
+        <p className="text-sm mb-4">
+          Delete <b>{p.name}</b>?
+        </p>
+
+        <div className="flex justify-end gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => toast.dismiss(t)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={async () => {
+              toast.loading("Deleting...", { id: p.id })
+              try {
+                await deleteProject(p.id).unwrap()
+                toast.success("Deleted", { id: p.id })
+              } catch {
+                toast.error("Delete failed", { id: p.id })
+              } finally {
+                toast.dismiss(t)
+              }
+            }}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+    ))
+  }
+
+  /* ---------------- SAVE ORDER ---------------- */
+
+  const saveOrder = async () => {
+    try {
+      await reorderProjects({
+        ids: projects.map((p) => p.id),
+      }).unwrap()
+
+      setIsReordering(false)
+      toast.success("Order updated")
+    } catch {
+      setProjects(previousOrder.current)
+      toast.error("Reorder failed")
+    }
   }
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      {/* HEADER */}
+      <div className="flex justify-between">
         <h2 className="text-lg font-semibold">Projects</h2>
 
-        <div className="flex gap-2">
-          {!isReordering ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  previousOrder.current = projects
-                  setIsReordering(true)
-                }}
-              >
-                <ArrowUpDown className="size-4 mr-1" />
-                Reorder
-              </Button>
+        {!isReordering ? (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                previousOrder.current = projects
+                setIsReordering(true)
+              }}
+            >
+              <ArrowUpDown className="mr-1 size-4" />
+              Reorder
+            </Button>
 
-              <Button onClick={() => setOpenForm(true)}>
-                <Plus className="size-4 mr-1" /> Add Project
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  setProjects(previousOrder.current)
-                  setIsReordering(false)
-                }}
-              >
-                <X className="size-4 mr-1" />
-                Cancel
-              </Button>
+            <Button
+              onClick={() => {
+                setSelectedProject(null)
+                setOpenForm(true)
+              }}
+            >
+              <Plus className="mr-1 size-4" />
+              Add Project
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setProjects(previousOrder.current)
+                setIsReordering(false)
+              }}
+            >
+              <X className="mr-1 size-4" />
+              Cancel
+            </Button>
 
-              <Button onClick={onSaveReorder} disabled={savingOrder}>
-                <Save className="size-4 mr-1" />
-                Save Order
-              </Button>
-            </>
-          )}
-        </div>
+            <Button onClick={saveOrder}>
+              <Save className="mr-1 size-4" />
+              Save
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* List */}
-      <Reorder.Group
-        axis="y"
-        values={projects}
-        onReorder={setProjects}
-      >
-        {projects.map((p) => (
-          <Reorder.Item
-            key={p.id}
-            value={p}
-            dragListener={isReordering}
-          >
-            <Card className="p-4 flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                {isReordering && (
-                  <GripVertical className="cursor-grab text-muted-foreground" />
-                )}
+      {!isReordering ? (
+        <ProjectsTable
+          data={projects}
+          onView={(p) => {
+            setSelectedProject(p)
+            setOpenView(true)
+          }}
+          onEdit={(p) => {
+            setSelectedProject(p)
+            setOpenForm(true)
+          }}
+          onDelete={confirmDelete}
+          onToggleFavorite={toggleFavorite}
+          onToggleActive={toggleActive}
+        />
+      ) : (
+        <ProjectsReorderList
+          projects={projects}
+          onChange={setProjects}
+        />
+      )}
 
-                <img
-                  src={p.images?.[0]}
-                  className="h-14 w-20 rounded object-cover"
-                />
+      {/* VIEW MODAL */}
+      <ProjectViewModal
+        open={openView}
+        onClose={() => {
+          setOpenView(false)
+          setSelectedProject(null)
+        }}
+        project={selectedProject}
+      />
 
-                <div>
-                  <p className="font-medium">{p.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {p.category} • #{p.serialNo ?? "-"}
-                  </p>
-                </div>
-              </div>
-
-              {!isReordering && (
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => {
-                      setActive(p)
-                      setOpenForm(true)
-                    }}
-                  >
-                    <Edit />
-                  </Button>
-
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={async () => {
-                      await deleteProject(p.id)
-                      toast.success("Project deleted")
-                    }}
-                  >
-                    <Trash2 className="text-destructive" />
-                  </Button>
-                </div>
-              )}
-            </Card>
-          </Reorder.Item>
-        ))}
-      </Reorder.Group>
-
-      {/* Modal */}
+      {/* FORM MODAL */}
       <ProjectFormModal
         open={openForm}
+        project={selectedProject}
         onClose={() => {
-          setActive(null)
           setOpenForm(false)
+          setSelectedProject(null)
         }}
-        project={active}
       />
     </div>
   )

@@ -15,6 +15,12 @@ export const projectApi = baseApi.injectEndpoints({
       providesTags: [{ type: TAGS.PROJECT, id: "LIST" }],
     }),
 
+    getProject: builder.query<Project, string>({
+  query: (id) => `/project/${id}`,
+  providesTags: (r, e, id) => [{ type: TAGS.PROJECT, id }],
+}),
+
+
     createProject: builder.mutation<Project, FormData>({
       query: (body) => ({
         url: "/project",
@@ -61,6 +67,7 @@ export const projectApi = baseApi.injectEndpoints({
 
 export const {
   useGetProjectsQuery,
+  useGetProjectQuery,
   useCreateProjectMutation,
   useUpdateProjectMutation,
   useDeleteProjectMutation,
