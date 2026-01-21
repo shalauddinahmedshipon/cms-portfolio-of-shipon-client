@@ -27,72 +27,32 @@ import type { NavItem } from "@/types/navigation.types"
 import { useGetProfileQuery } from "@/store/api/profile.api"
 import { Skeleton } from "@/components/ui/skeleton"
 
-
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
   const { data: profile, isLoading } = useGetProfileQuery(undefined, {
     refetchOnMountOrArgChange: true,
   })
 
-  // Minimal sidebar for unauthenticated users
-  if (!isAuthenticated) {
-    return (
-      <Sidebar collapsible="icon" {...props}>
-        <SidebarHeader>
-          <div className="h-10 bg-muted animate-pulse rounded-md" />
-        </SidebarHeader>
-        <SidebarContent>
-          <div className="space-y-4 p-4">
-            <div className="h-8 bg-muted animate-pulse rounded" />
-            <div className="h-8 bg-muted animate-pulse rounded" />
-          </div>
-        </SidebarContent>
-        <SidebarRail />
-      </Sidebar>
-    )
-  }
-
-  /* ---------------------------
-     User & Team Data
-  ---------------------------- */
+  // Always call hooks first to avoid "fewer hooks" error
   const data = React.useMemo(() => {
     const userData = {
       name: user?.fullName ?? "MD.SHIPON",
       email: user?.email ?? "shalauddinahmedshipon2018@gmail.com",
-      avatar:"https://www.nicepng.com/png/detail/128-1280406_view-user-icon-png-user-circle-icon-png.png", // icon for NavUser
+      avatar:
+        "https://www.nicepng.com/png/detail/128-1280406_view-user-icon-png-user-circle-icon-png.png",
     }
 
-    // const teams = [
-    //   {
-    //     name: profile?.name ?? "MD.SHIPON",
-    //     logo: profile?.avatarUrl
-    //       ? () => (
-    //           <img
-    //             src={profile.avatarUrl}
-    //             alt={profile?.name ?? "Team"}
-    //             className="w-5 h-5 rounded-full"
-    //           />
-    //         )
-    //       : DefaultUserIcon,
-    //     plan: profile?.designation ?? "N/A",
-    //   },
-    // ]
-
     const teams = [
-    {
-      name: profile?.name ?? "MD.SHIPON",
-      // FIX: Pass the URL directly. Do not create an <img> tag here.
-      logo: profile?.avatarUrl ?? DefaultUserIcon, 
-      plan: profile?.designation ?? "N/A",
-    },
-  ]
+      {
+        name: profile?.name ?? "MD.SHIPON",
+        logo: profile?.avatarUrl ?? DefaultUserIcon,
+        plan: profile?.designation ?? "N/A",
+      },
+    ]
 
     return { user: userData, teams }
   }, [user, profile])
 
-  /* ---------------------------
-     Navigation (IMMUTABLE)
-  ---------------------------- */
   const navMain: NavItem[] = React.useMemo(() => {
     const baseNav: NavItem[] = [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -132,25 +92,21 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     return baseNav
   }, [user?.role])
 
-  /* ---------------------------
-     Render
-  ---------------------------- */
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        {isLoading ? (
+        {(!isAuthenticated || isLoading) ? (
           <div className="flex flex-col gap-2 p-2">
             <Skeleton className="w-24 h-6 rounded" />
             <Skeleton className="w-16 h-6 rounded" />
           </div>
         ) : (
           <TeamSwitcher teams={data.teams} />
-       
         )}
       </SidebarHeader>
 
       <SidebarContent>
-        {isLoading ? (
+        {(!isAuthenticated || isLoading) ? (
           <div className="space-y-2 p-4">
             <Skeleton className="h-8 rounded" />
             <Skeleton className="h-8 rounded" />
@@ -162,7 +118,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        {isLoading ? (
+        {(!isAuthenticated || isLoading) ? (
           <div className="flex items-center gap-2 p-2">
             <Skeleton className="w-10 h-10 rounded-full" />
             <div className="flex flex-col gap-1">
