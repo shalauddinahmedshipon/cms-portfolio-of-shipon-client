@@ -1,64 +1,81 @@
-import type { EventListResponse, Event } from '@/types/event.types';
-import { baseApi } from './baseApi';
+import type { Event, EventListResponse } from "@/types/event.types"
+import { baseApi } from "./baseApi"
+import { TAGS } from "@/types/api.tags"
 
 export const eventApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // ---------- GET EVENTS (LIST) ----------
     getEvents: builder.query<
       EventListResponse,
       {
-        page?: number;
-        limit?: number;
-        search?: string;
-        eventType?: string;
-        isActive?: boolean;
+        page?: number
+        limit?: number
+        search?: string
+        eventType?: string
+        isActive?: boolean
       }
     >({
       query: (params) => ({
-        url: '/event',
-        method: 'GET',
+        url: "/event",
         params,
       }),
-      providesTags: ['Event'],
+      transformResponse: (response: any): EventListResponse => {
+
+        const innerData = response?.data?.data || []
+        const innerMeta = response?.data?.meta || {
+          page: 1,
+          limit: 10,
+          total: innerData.length,
+          totalPages: 1,
+        }
+
+        return {
+          data: innerData,
+          meta: innerMeta,
+        }
+      },
+      providesTags: [{ type: TAGS.EVENT, id: "LIST" }],
     }),
 
+    // ---------- GET SINGLE ----------
     getEvent: builder.query<Event, string>({
       query: (id) => `/event/${id}`,
-      providesTags: (_r, _e, id) => [{ type: 'Event', id }],
+      providesTags: (_r, _e, id) => [{ type: TAGS.EVENT, id }],
     }),
 
+    // ---------- CREATE ----------
     createEvent: builder.mutation<Event, FormData>({
       query: (body) => ({
-        url: '/event',
-        method: 'POST',
+        url: "/event",
+        method: "POST",
         body,
       }),
-      invalidatesTags: ['Event'],
+      invalidatesTags: [{ type: TAGS.EVENT, id: "LIST" }],
     }),
 
-    updateEvent: builder.mutation<
-      Event,
-      { id: string; body: FormData }
-    >({
-      query: ({ id, body }) => ({
+    // ---------- UPDATE ----------
+    updateEvent: builder.mutation<Event, { id: string; data: FormData }>({
+      query: ({ id, data }) => ({
         url: `/event/${id}`,
-        method: 'PATCH',
-        body,
+        method: "PATCH",
+        body: data,
       }),
-      invalidatesTags: (_r, _e, arg) => [
-        'Event',
-        { type: 'Event', id: arg.id },
+      invalidatesTags: (_r, _e, { id }) => [
+        { type: TAGS.EVENT, id: "LIST" },
+        { type: TAGS.EVENT, id },
       ],
     }),
 
+    // ---------- DELETE ----------
     deleteEvent: builder.mutation<void, string>({
       query: (id) => ({
         url: `/event/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['Event'],
+      invalidatesTags: [{ type: TAGS.EVENT, id: "LIST" }],
     }),
   }),
-});
+})
 
 export const {
   useGetEventsQuery,
@@ -66,4 +83,4 @@ export const {
   useCreateEventMutation,
   useUpdateEventMutation,
   useDeleteEventMutation,
-} = eventApi;
+} = eventApi
