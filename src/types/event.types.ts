@@ -20,12 +20,3 @@ export interface Event {
   updatedAt: string;
 }
 
-export interface EventListResponse {
-  data: Event[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}

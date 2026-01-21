@@ -1,16 +1,9 @@
 import { Project } from "@/types/project.types"
 import { baseApi } from "./baseApi"
 import { TAGS } from "@/types/api.tags"
+import { ProjectsResponse } from "@/types/api.response.types";
 
-interface ProjectsResponse {
-  data: Project[]
-  meta: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
-}
+
 
 export const projectApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

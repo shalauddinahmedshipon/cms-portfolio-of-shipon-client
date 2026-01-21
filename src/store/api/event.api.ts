@@ -1,6 +1,7 @@
-import type { Event, EventListResponse } from "@/types/event.types"
+import type { Event} from "@/types/event.types"
 import { baseApi } from "./baseApi"
 import { TAGS } from "@/types/api.tags"
+import { EventListResponse } from "@/types/api.response.types"
 
 export const eventApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
