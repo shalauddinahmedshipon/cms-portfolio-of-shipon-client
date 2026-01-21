@@ -72,7 +72,8 @@ export default function BlogsTable({
 
               <TableCell className="font-medium">{b.title}</TableCell>
               <TableCell>{b.category || "—"}</TableCell>
-              <TableCell>{b.tags?.length ? b.tags.join(", ") : "—"}</TableCell>
+              <TableCell>{b.tags?.length ?
+               b.tags.join(", ") : "—"}</TableCell>
 
               {/* ACTIVE */}
               <TableCell>
