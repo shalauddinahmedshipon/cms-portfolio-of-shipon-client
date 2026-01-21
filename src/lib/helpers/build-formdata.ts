@@ -55,4 +55,18 @@ export function buildExperienceFormData(
 }
 
 
+// src/lib/helpers/build-formdata.ts
+
+export const buildGalleryFormData = (
+  data: { title?: string; id?: string } | null,
+  file?: File | null
+) => {
+  const formData = new FormData()
+  if (!data) return formData
+
+  if (data.title) formData.append("title", data.title)
+  if (file) formData.append("image", file)
+
+  return formData
+}
 

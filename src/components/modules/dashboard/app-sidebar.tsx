@@ -2,12 +2,12 @@
 
 import * as React from "react"
 import {
-  SquareTerminal,
   LayoutDashboard,
   User,
   FolderKanban,
   Image,
   Users,
+  User as DefaultUserIcon,
 } from "lucide-react"
 
 import {
@@ -24,16 +24,22 @@ import { TeamSwitcher } from "./team-switcher"
 
 import { useAppSelector } from "@/store/hooks"
 import type { NavItem } from "@/types/navigation.types"
+import { useGetProfileQuery } from "@/store/api/profile.api"
+import { Skeleton } from "@/components/ui/skeleton"
+
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+  const { data: profile, isLoading } = useGetProfileQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  })
 
-  // If not yet authenticated → show minimal / loading sidebar
+  // Minimal sidebar for unauthenticated users
   if (!isAuthenticated) {
     return (
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
-          <div className="h-10 bg-muted animate-pulse rounded-md" /> {/* placeholder */}
+          <div className="h-10 bg-muted animate-pulse rounded-md" />
         </SidebarHeader>
         <SidebarContent>
           <div className="space-y-4 p-4">
@@ -45,37 +51,51 @@ const { user, isAuthenticated } = useAppSelector((state) => state.auth)
       </Sidebar>
     )
   }
+
   /* ---------------------------
      User & Team Data
   ---------------------------- */
-  const data = React.useMemo(
-    () => ({
-      user: {
-        name: user?.fullName ?? "MD.SHIPON",
-        email: user?.email ?? "shalauddinahmedshipon2018@gmail.com",
-        avatar: "/avatars/shadcn.jpg",
-      },
-      teams: [
-        {
-          name: "MD.SHIPON",
-          logo: SquareTerminal,
-          plan: "Software Engineer",
-        },
-      ],
-    }),
-    [user]
-  )
+  const data = React.useMemo(() => {
+    const userData = {
+      name: user?.fullName ?? "MD.SHIPON",
+      email: user?.email ?? "shalauddinahmedshipon2018@gmail.com",
+      avatar:"https://www.nicepng.com/png/detail/128-1280406_view-user-icon-png-user-circle-icon-png.png", // icon for NavUser
+    }
+
+    // const teams = [
+    //   {
+    //     name: profile?.name ?? "MD.SHIPON",
+    //     logo: profile?.avatarUrl
+    //       ? () => (
+    //           <img
+    //             src={profile.avatarUrl}
+    //             alt={profile?.name ?? "Team"}
+    //             className="w-5 h-5 rounded-full"
+    //           />
+    //         )
+    //       : DefaultUserIcon,
+    //     plan: profile?.designation ?? "N/A",
+    //   },
+    // ]
+
+    const teams = [
+    {
+      name: profile?.name ?? "MD.SHIPON",
+      // FIX: Pass the URL directly. Do not create an <img> tag here.
+      logo: profile?.avatarUrl ?? DefaultUserIcon, 
+      plan: profile?.designation ?? "N/A",
+    },
+  ]
+
+    return { user: userData, teams }
+  }, [user, profile])
 
   /* ---------------------------
      Navigation (IMMUTABLE)
   ---------------------------- */
   const navMain: NavItem[] = React.useMemo(() => {
     const baseNav: NavItem[] = [
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: LayoutDashboard,
-      },
+      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
       {
         title: "Profile",
         icon: User,
@@ -105,13 +125,8 @@ const { user, isAuthenticated } = useAppSelector((state) => state.auth)
       },
     ]
 
-    // ✅ Role-based nav (NO mutation)
     if (user?.role === "ADMIN") {
-      baseNav.push({
-        title: "Users",
-        url: "/dashboard/users",
-        icon: Users,
-      })
+      baseNav.push({ title: "Users", url: "/dashboard/users", icon: Users })
     }
 
     return baseNav
@@ -123,20 +138,44 @@ const { user, isAuthenticated } = useAppSelector((state) => state.auth)
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-2">
+            <Skeleton className="w-24 h-6 rounded" />
+            <Skeleton className="w-16 h-6 rounded" />
+          </div>
+        ) : (
+          <TeamSwitcher teams={data.teams} />
+       
+        )}
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={navMain} />
+        {isLoading ? (
+          <div className="space-y-2 p-4">
+            <Skeleton className="h-8 rounded" />
+            <Skeleton className="h-8 rounded" />
+            <Skeleton className="h-8 rounded" />
+          </div>
+        ) : (
+          <NavMain items={navMain} />
+        )}
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {isLoading ? (
+          <div className="flex items-center gap-2 p-2">
+            <Skeleton className="w-10 h-10 rounded-full" />
+            <div className="flex flex-col gap-1">
+              <Skeleton className="w-20 h-3 rounded" />
+              <Skeleton className="w-16 h-3 rounded" />
+            </div>
+          </div>
+        ) : (
+          <NavUser user={data.user} />
+        )}
       </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
   )
 }
-
-
