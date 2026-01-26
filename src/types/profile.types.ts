@@ -1,3 +1,5 @@
+export type BannerType = "IMAGE" | "VIDEO"
+
 export interface Profile {
   id: string
   name?: string
@@ -6,6 +8,7 @@ export interface Profile {
   bio?: string
   avatarUrl?: string
   bannerUrl?: string
+  bannerType?: BannerType   
   resumeUrl?: string
   location?: string
   contactInfo?: ContactInfo
