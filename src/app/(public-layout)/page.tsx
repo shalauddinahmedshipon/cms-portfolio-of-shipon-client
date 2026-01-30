@@ -1,18 +1,36 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import HeroSection from "@/components/modules/home/HeroSection";
 
+async function getProfile() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
+      cache: "no-store",
+      next: { revalidate: 3600 }, // optional: ISR if data doesn't change often
+    });
 
-export default function Home() {
+    if (!res.ok) {
+      console.error("Profile fetch failed", res.status);
+      return null;
+    }
+
+    const json = await res.json();
+    return json.data ?? null;
+  } catch (err) {
+    console.error("getProfile error:", err);
+    return null;
+  }
+}
+
+export default async function HomePage() {
+  const profile = await getProfile();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <div>
-        <div className="mb-6 text-center text-2xl font-bold">
-        This is the public landing page.
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6">
+        <HeroSection profile={profile} />
+        {/* <Suspense fallback={<OtherSectionSkeleton />}>
+          <OtherSection />
+        </Suspense> */}
       </div>
-  <Link href="/dashboard">
-    <Button size="lg">Go to Dashboard</Button>
-  </Link>
-      </div>
-    </div>
+    </main>
   );
 }

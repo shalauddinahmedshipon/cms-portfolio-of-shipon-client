@@ -5,7 +5,7 @@ export const profileSchema = z.object({
 
   designation: z.string().optional(),
 
-  headline: z.string().max(100).optional(),
+  headline: z.string().optional(),
 
   bio: z.string().max(1000).optional(),
 
