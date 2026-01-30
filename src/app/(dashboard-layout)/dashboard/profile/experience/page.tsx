@@ -248,6 +248,7 @@ export default function ExperiencePage() {
             <Textarea
               placeholder="Description"
               value={form.active?.description ?? ""}
+              cols={4}
               onChange={(e) =>
                 form.setActive({
                   ...form.active!,

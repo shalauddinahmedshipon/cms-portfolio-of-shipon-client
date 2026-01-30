@@ -1,5 +1,8 @@
 import AboutSection from "@/components/modules/home/AboutSection";
+import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
+import { Experience } from "@/types/experience.types";
+
 
 async function getProfile() {
   try {
@@ -21,11 +24,32 @@ async function getProfile() {
   }
 }
 
+async function getExperiences(): Promise<Experience[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/experience`, {
+      cache: "no-store",
+      next: { revalidate: 3600 },
+    });
+
+    if (!res.ok) {
+      console.error("Experience fetch failed", res.status);
+      return [];
+    }
+
+    const json = await res.json();
+    return json.data ?? [];
+  } catch (err) {
+    console.error("getExperiences error:", err);
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const profile = await getProfile();
+    const experiences = await getExperiences();
 
   return (
-    <main className="min-h-screen ">
+    <main className="min-h-screen  max-w-6xl mx-auto">
       <div className="container mx-auto ">
         {/* Hero Section */}
           <section className="w-full  bg-white pb-8 rounded-b-xl">
@@ -34,14 +58,13 @@ export default async function HomePage() {
         
 
         {/* Profile Summary / About Me */}
-        <section className="mt-8">
+        <section className="mt-8 w-full">
           <AboutSection bio={profile.bio}/>
         </section>
 
         {/* Experience Timeline */}
         <section className="mt-8">
-          <h2 className="text-3xl font-bold">Experience</h2>
-          {/* Experience content */}
+       <ExperienceSection experiences={experiences} />
         </section>
 
         {/* Skills */}

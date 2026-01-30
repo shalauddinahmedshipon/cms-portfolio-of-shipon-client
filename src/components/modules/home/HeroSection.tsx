@@ -60,7 +60,7 @@ export default function HeroSection({ profile }: HeroSectionProps) {
             )}
 
             {profile.headline && (
-              <p className="mt-3 text-base md:text-md text-muted-foreground max-w-3xl">
+              <p className="mt-3 text-base md:text-md text-muted-foreground max-w-4xl">
                 {profile.headline}
               </p>
             )}
@@ -78,7 +78,7 @@ export default function HeroSection({ profile }: HeroSectionProps) {
           </div>
 
           {/* Avatar - Right Side */}
-          <div className="relative mx-auto md:mx-0 h-32 w-32 md:h-40 md:w-40 lg:w-52 lg:h-52 rounded-full border-4 border-background bg-background shadow-xl overflow-hidden flex-shrink-0 -mt-20 md:-mt-24 order-1 md:order-2">
+          <div className="relative mx-auto md:mx-0 h-36 w-36 md:h-48 md:w-48 lg:w-52 lg:h-52 rounded-full border-4 border-background bg-background shadow-xl overflow-hidden flex-shrink-0 -mt-20 md:-mt-24 order-1 md:order-2">
             <Image
               src={profile.avatarUrl ?? "/avatar.jpg"}
               alt={`${profile.name || "User"} profile picture`}

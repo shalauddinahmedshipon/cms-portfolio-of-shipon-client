@@ -14,7 +14,7 @@ export default function AboutSection({ bio }: AboutSectionProps) {
 
   if (!bio) return null;
 
-  const PREVIEW_LENGTH = 200; // Adjust character limit as needed
+  const PREVIEW_LENGTH = 330; // Adjust character limit as needed
   const previewText = bio.slice(0, PREVIEW_LENGTH);
   const shouldShowButton = bio.length > PREVIEW_LENGTH;
 
@@ -22,7 +22,7 @@ export default function AboutSection({ bio }: AboutSectionProps) {
     <Card>
       <CardContent className="pt-6">
         <h2 className="text-3xl font-semibold mb-6">About Me</h2>
-        <p className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
+        <p className=" text-muted-foreground leading-relaxed whitespace-pre-line">
           {isExpanded ? bio : previewText}
           {!isExpanded && shouldShowButton && '...'}
         </p>

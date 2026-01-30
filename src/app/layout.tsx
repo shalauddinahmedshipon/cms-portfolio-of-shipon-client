@@ -29,11 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-gray-200 text-foreground antialiased max-w-6xl mx-auto`}
+        className={`${geistSans.variable} ${geistMono.variable}  text-foreground antialiased`}
       >
         <Providers>
           <AuthBootstrap/>
-           <Navbar />
+
           {children}
           <Toaster 
   position="top-right" 
