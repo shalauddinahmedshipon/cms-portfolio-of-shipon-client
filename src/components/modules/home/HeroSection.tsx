@@ -15,9 +15,10 @@ export default function HeroSection({ profile }: HeroSectionProps) {
   }
 
   return (
-    <section className="w-full pt-6">
-      {/* Banner */}
-      <div className="relative h-[220px] sm:h-[280px] md:h-[320px] rounded-xl overflow-hidden bg-muted">
+  
+     <div>
+       {/* Banner */}
+      <div className="relative h-[220px] sm:h-[280px] md:h-[320px]  overflow-hidden bg-muted">
         {profile.bannerType === "VIDEO" ? (
           <video
             autoPlay
@@ -48,7 +49,7 @@ export default function HeroSection({ profile }: HeroSectionProps) {
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           {/* Content Section - Left Side */}
           <div className="mt-6 text-center md:text-left max-w-4xl mx-auto md:mx-0 md:flex-1 order-2 md:order-1">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
               {profile.name || "Your Name"}
             </h1>
 
@@ -89,6 +90,7 @@ export default function HeroSection({ profile }: HeroSectionProps) {
           </div>
         </div>
       </div>
-    </section>
+     </div>
+
   );
 }
