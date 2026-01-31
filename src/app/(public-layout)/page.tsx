@@ -1,14 +1,15 @@
 import AboutSection from "@/components/modules/home/AboutSection";
 import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
+import SkillSection from "@/components/modules/home/SkillSection";
 import { Experience } from "@/types/experience.types";
+import { SkillCategory } from "@/types/skill.types";
 
 
 async function getProfile() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
       cache: "no-store",
-      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -28,7 +29,6 @@ async function getExperiences(): Promise<Experience[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/experience`, {
       cache: "no-store",
-      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -44,9 +44,30 @@ async function getExperiences(): Promise<Experience[]> {
   }
 }
 
+async function getSkills(): Promise<SkillCategory[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skill/categories`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.error("Skills fetch failed", res.status);
+      return [];
+    }
+
+    const json = await res.json();
+    return json.data ?? [];
+  } catch (err) {
+    console.error("getSkills error:", err);
+    return [];
+  }
+}
+
+
 export default async function HomePage() {
   const profile = await getProfile();
     const experiences = await getExperiences();
+    const skills = await getSkills();
 
   return (
     <main className="min-h-screen  max-w-6xl mx-auto">
@@ -69,8 +90,7 @@ export default async function HomePage() {
 
         {/* Skills */}
         <section className="mt-8">
-          <h2 className="text-3xl font-bold">Skills</h2>
-          {/* Skills content */}
+           <SkillSection categories={skills} />
         </section>
 
         {/* Coding Profiles */}
