@@ -1,8 +1,10 @@
 import AboutSection from "@/components/modules/home/AboutSection";
+import AchievementSection from "@/components/modules/home/AchievementSection";
 import CodingProfileSection from "@/components/modules/home/CodingProfileSection";
 import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
 import SkillSection from "@/components/modules/home/SkillSection";
+import { Achievement } from "@/types/achievement";
 import { Experience } from "@/types/experience.types";
 import { CodingProfile } from "@/types/profile.types";
 import { SkillCategory } from "@/types/skill.types";
@@ -86,6 +88,27 @@ async function getCodingProfiles(): Promise<CodingProfile[]> {
   }
 }
 
+async function getAchievements(): Promise<Achievement[]> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/achievements`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) {
+      console.error("Achievements fetch failed", res.status);
+      return [];
+    }
+
+    const json = await res.json();
+    return json.data ?? [];
+  } catch (err) {
+    console.error("getAchievements error:", err);
+    return [];
+  }
+}
+
+
 
 
 export default async function HomePage() {
@@ -93,6 +116,8 @@ export default async function HomePage() {
     const experiences = await getExperiences();
     const skills = await getSkills();
     const codingProfiles = await getCodingProfiles();
+    const achievements = await getAchievements();
+
 
   return (
     <main className="min-h-screen  max-w-6xl mx-auto">
@@ -167,11 +192,12 @@ export default async function HomePage() {
           {/* Gallery preview */}
         </section>
 
-        {/* Achievements */}
-        <section className="mt-8">
-          <h2 className="text-3xl font-bold">Achievements</h2>
-          {/* Achievements content */}
-        </section>
+       
+       {/* Achievements */}
+<section className="mt-8">
+  <AchievementSection achievements={achievements} />
+</section>
+
 
         {/* Contact CTA */}
         <section className="mt-8 mb-16 text-center">

@@ -36,7 +36,7 @@ export default function ExperienceSection({ experiences }: Props) {
   return (
     <Card className="border-none shadow-lg">
       <CardContent className="pt-6 md:pt-8">
-        <h2 className="text-3xl font-semibold mb-8 md:mb-10 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-semibold mb-8 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
           Experience
         </h2>
 
