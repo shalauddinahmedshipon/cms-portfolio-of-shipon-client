@@ -1,6 +1,7 @@
 import AboutSection from "@/components/modules/home/AboutSection";
 import AchievementSection from "@/components/modules/home/AchievementSection";
 import CodingProfileSection from "@/components/modules/home/CodingProfileSection";
+import EducationTimeline from "@/components/modules/home/EducationTimeline";
 import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
 import SkillSection from "@/components/modules/home/SkillSection";
@@ -108,6 +109,15 @@ async function getAchievements(): Promise<Achievement[]> {
   }
 }
 
+async function getEducation() {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/education`,
+    { cache: "no-store" }
+  )
+  const json = await res.json()
+  return json.data
+}
+
 
 
 
@@ -117,6 +127,7 @@ export default async function HomePage() {
     const skills = await getSkills();
     const codingProfiles = await getCodingProfiles();
     const achievements = await getAchievements();
+    const education = await getEducation()
 
 
   return (
@@ -198,9 +209,13 @@ export default async function HomePage() {
   <AchievementSection achievements={achievements} />
 </section>
 
+<section className="mt-8">
+   <EducationTimeline education={education} />
+</section>
+
 
         {/* Contact CTA */}
-        <section className="mt-8 mb-16 text-center">
+        <section className="mt-8 pb-5 text-center">
           <h2 className="text-3xl font-bold mb-4">Let's Build Something Together</h2>
           <a href="/contact" className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:opacity-90 transition">
             Contact Me
