@@ -1,8 +1,10 @@
 import AboutSection from "@/components/modules/home/AboutSection";
+import CodingProfileSection from "@/components/modules/home/CodingProfileSection";
 import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
 import SkillSection from "@/components/modules/home/SkillSection";
 import { Experience } from "@/types/experience.types";
+import { CodingProfile } from "@/types/profile.types";
 import { SkillCategory } from "@/types/skill.types";
 
 
@@ -64,10 +66,33 @@ async function getSkills(): Promise<SkillCategory[]> {
 }
 
 
+async function getCodingProfiles(): Promise<CodingProfile[]> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/profile/coding-profiles`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) {
+      console.error("Coding profiles fetch failed", res.status);
+      return [];
+    }
+
+    const json = await res.json();
+    return json.data ?? [];
+  } catch (err) {
+    console.error("getCodingProfiles error:", err);
+    return [];
+  }
+}
+
+
+
 export default async function HomePage() {
   const profile = await getProfile();
     const experiences = await getExperiences();
     const skills = await getSkills();
+    const codingProfiles = await getCodingProfiles();
 
   return (
     <main className="min-h-screen  max-w-6xl mx-auto">
@@ -95,8 +120,7 @@ export default async function HomePage() {
 
         {/* Coding Profiles */}
         <section className="mt-8">
-          <h2 className="text-3xl font-bold">Coding Profiles</h2>
-          {/* GitHub, LeetCode, etc. */}
+           <CodingProfileSection profiles={codingProfiles} />
         </section>
 
         {/* Featured Projects (2-3) */}

@@ -33,8 +33,8 @@ export default function SkillSection({ categories }: Props) {
                     className={cn(
                       "flex items-center gap-2.5 px-4 py-2.5 rounded-full",
                       "bg-muted/60 border border-border/50",
-                      "hover:border-primary/50 hover:bg-primary/5",
-                      "transition-all duration-200"
+                      "hover:shadow-md",
+                      "transition-all duration-200 hover:-translate-y-0.5"
                     )}
                   >
                     {skill.icon ? (
