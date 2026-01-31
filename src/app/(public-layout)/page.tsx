@@ -4,6 +4,7 @@ import CodingProfileSection from "@/components/modules/home/CodingProfileSection
 import EducationTimeline from "@/components/modules/home/EducationTimeline";
 import ExperienceSection from "@/components/modules/home/ExperienceSection";
 import HeroSection from "@/components/modules/home/HeroSection";
+import HomeGallery from "@/components/modules/home/HomeGallery";
 import SkillSection from "@/components/modules/home/SkillSection";
 import { Achievement } from "@/types/achievement";
 import { Experience } from "@/types/experience.types";
@@ -211,6 +212,10 @@ export default async function HomePage() {
 
 <section className="mt-8">
    <EducationTimeline education={education} />
+</section>
+
+<section className="mt-8">
+   <HomeGallery />
 </section>
 
 
