@@ -49,12 +49,12 @@ export default function HeroSection({ profile }: HeroSectionProps) {
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
           {/* Content Section - Left Side */}
           <div className="mt-6 text-center md:text-left max-w-4xl mx-auto md:mx-0 md:flex-1 order-2 md:order-1">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-sans sm:text-3xl lg:text-4xl font-semibold tracking-tight">
               {profile.name || "Your Name"}
             </h1>
 
             {profile.designation && (
-              <p className="mt-2 text-xl md:text-xl text-muted-foreground font-medium">
+              <p className="mt-2 text-lg text-muted-foreground font-semibold italic">
                 {profile.designation}
               </p>
             )}
