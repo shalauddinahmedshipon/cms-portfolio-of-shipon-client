@@ -25,7 +25,7 @@ export function TeamSwitcher({
            <div className="flex items-center gap-2 p-2 cursor-pointer rounded-lg hover:bg-sidebar-accent transition-colors">
               
               {/* Force Square Container */}
-              <div className="size-6 shrink-0 bg-sidebar-primary flex items-center justify-center overflow-hidden aspect-square">
+              <div className="size-8 shrink-0 bg-sidebar-primary flex items-center justify-center overflow-hidden aspect-square">
                 {typeof activeTeam.logo === "string" ? (
                   <img
                     src={activeTeam.logo}

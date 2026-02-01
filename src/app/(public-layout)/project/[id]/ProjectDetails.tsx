@@ -33,7 +33,7 @@ export default function ProjectDetailClient({ project }: Props) {
       <div className="container mx-auto max-w-6xl px-5 py-20">
         {/* Back */}
         <Link
-          href="/projects"
+          href="/project"
           className="group mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

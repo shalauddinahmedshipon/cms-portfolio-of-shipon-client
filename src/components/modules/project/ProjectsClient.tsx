@@ -1,106 +1,115 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProjectCard from "@/components/modules/home/ProjectCard";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProjectsResponse } from "@/types/api.response.types";
+import { cn } from "@/lib/utils";
+import { getProjects } from "@/lib/api";
+import ProjectsSkeleton from "./ProjectSkeleton";
 
-interface Props {
-  initialData: ProjectsResponse;
-}
-
-export default function ProjectsClient({ initialData }: Props) {
+export default function ProjectsClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [category, setCategory] = useState<"ALL" | "LEARNING" | "LIVE">(
-    (searchParams.get("category") as "LEARNING" | "LIVE") || "ALL"
-  );
 
-  const { data: projects, meta } = initialData;
+  const [projectsData, setProjectsData] = useState<ProjectsResponse>({
+    data: [],
+    meta: { page: 1, limit: 12, total: 0, totalPages: 1 },
+  });
+  const [loading, setLoading] = useState(true);
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    updateURL({ search: value, page: "1" });
+  const currentCategory = searchParams.get("category") as "LEARNING" | "LIVE" | null;
+  const currentFavorite = searchParams.get("isFavorite") === "true";
+  const currentPage = Number(searchParams.get("page") || 1);
+
+  // Active tab logic
+  const activeTab = currentFavorite
+    ? "FAVORITES"
+    : currentCategory || "ALL";
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const data = await getProjects({
+      page: currentPage,
+      limit: 12,
+      category: currentCategory ?? undefined,
+      isFavorite: currentFavorite || undefined,
+    });
+    setProjectsData(data);
+    setLoading(false);
   };
 
-  const handleCategoryChange = (value: "ALL" | "LEARNING" | "LIVE") => {
-    setCategory(value);
-    updateURL({ 
-      category: value === "ALL" ? undefined : value,
-      page: "1"
-    });
+  useEffect(() => {
+    fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentCategory, currentFavorite, currentPage]);
+
+  const handleTabChange = (tab: "ALL" | "LEARNING" | "LIVE" | "FAVORITES") => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (tab === "ALL") {
+      params.delete("category");
+      params.delete("isFavorite");
+    } else if (tab === "FAVORITES") {
+      params.delete("category");
+      params.set("isFavorite", "true");
+    } else {
+      params.set("category", tab);
+      params.delete("isFavorite");
+    }
+
+    params.set("page", "1");
+    router.push(`/project?${params.toString()}`);
   };
 
   const handlePageChange = (page: number) => {
-    updateURL({ page: page.toString() });
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    router.push(`/project?${params.toString()}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const updateURL = (params: Record<string, string | undefined>) => {
-    const current = new URLSearchParams(searchParams);
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
-        current.set(key, value);
-      } else {
-        current.delete(key);
-      }
-    });
+  const { data: projects, meta } = projectsData;
 
-    router.push(`/project?${current.toString()}`);
-  };
+  if (loading) {
+    return <ProjectsSkeleton count={12}/>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-200">
-      <div className="container mx-auto max-w-6xl py-8 px-4">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto max-w-6xl px-4 py-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">All Projects</h1>
-          <p className="text-muted-foreground">
-            Explore all {meta.total} projects
-          </p>
+        <div className="mb-10">
+          <h1 className="text-3xl font-semibold tracking-tight mt-10">Projects</h1>
+         
         </div>
 
-        {/* Filters */}
-        <Card className="border-none shadow-lg mb-8">
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Search projects..."
-                  value={search}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <select
-                  value={category}
-                  onChange={(e) => handleCategoryChange(e.target.value as "ALL" | "LEARNING" | "LIVE")}
-                  className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-background"
-                >
-                  <option value="ALL">All Categories</option>
-                  <option value="LEARNING">Learning</option>
-                  <option value="LIVE">Live</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabs */}
+        <div className="mb-10 border-b">
+          <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+            {(["ALL", "LEARNING", "LIVE", "FAVORITES"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={cn(
+                  "px-6 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap",
+                  activeTab === tab
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                )}
+              >
+                {tab === "ALL" ? "All" : tab === "FAVORITES" ? "Favorites" : tab}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Projects Grid */}
         {projects.length > 0 ? (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
               {projects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}
@@ -108,79 +117,51 @@ export default function ProjectsClient({ initialData }: Props) {
 
             {/* Pagination */}
             {meta.totalPages > 1 && (
-              <Card className="border-none shadow-lg">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {((meta.page - 1) * meta.limit) + 1} to{" "}
-                      {Math.min(meta.page * meta.limit, meta.total)} of {meta.total} projects
-                    </p>
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  onClick={() => handlePageChange(meta.page - 1)}
+                  disabled={meta.page === 1}
+                  className="p-3 rounded-lg border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
 
-                    <div className="flex items-center gap-2">
+                <div className="flex-1 overflow-x-auto scrollbar-hide">
+                  <div className="flex items-center gap-2 min-w-max">
+                    {Array.from({ length: meta.totalPages }, (_, i) => i + 1).map((page) => (
                       <button
-                        onClick={() => handlePageChange(meta.page - 1)}
-                        disabled={meta.page === 1}
-                        className="p-2 rounded-lg border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                        aria-label="Previous page"
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={cn(
+                          "min-w-[40px] h-10 px-4 rounded-lg text-sm font-medium transition-all",
+                          page === meta.page
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "border hover:bg-accent hover:border-primary/50"
+                        )}
                       >
-                        <ChevronLeft className="w-5 h-5" />
+                        {page}
                       </button>
-
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: meta.totalPages }, (_, i) => i + 1).map((page) => {
-                          // Show first page, last page, current page, and pages around current
-                          const showPage =
-                            page === 1 ||
-                            page === meta.totalPages ||
-                            (page >= meta.page - 1 && page <= meta.page + 1);
-
-                          if (!showPage && page === 2) {
-                            return <span key={page} className="px-2">...</span>;
-                          }
-                          if (!showPage && page === meta.totalPages - 1) {
-                            return <span key={page} className="px-2">...</span>;
-                          }
-                          if (!showPage) return null;
-
-                          return (
-                            <button
-                              key={page}
-                              onClick={() => handlePageChange(page)}
-                              className={`min-w-[40px] px-3 py-2 rounded-lg transition-all ${
-                                page === meta.page
-                                  ? "bg-primary text-primary-foreground"
-                                  : "border hover:bg-accent"
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <button
-                        onClick={() => handlePageChange(meta.page + 1)}
-                        disabled={meta.page === meta.totalPages}
-                        className="p-2 rounded-lg border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                        aria-label="Next page"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                <button
+                  onClick={() => handlePageChange(meta.page + 1)}
+                  disabled={meta.page === meta.totalPages}
+                  className="p-3 rounded-lg border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </>
         ) : (
-          <Card className="border-none shadow-lg">
-            <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No projects found</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Try adjusting your search or filters
-                </p>
-              </div>
+          <Card className="border-none shadow-md">
+            <CardContent className="py-16 text-center">
+              <h3 className="text-xl font-medium mb-2">No projects found</h3>
+              <p className="text-muted-foreground">
+                Try switching to a different filter
+              </p>
             </CardContent>
           </Card>
         )}

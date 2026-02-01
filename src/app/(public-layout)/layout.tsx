@@ -9,7 +9,7 @@ export default function LandingPageLayout({
   return (
 
       <main
-        className={` min-h-screen bg-gray-200 text-foreground antialiased`}
+        className={` min-h-screen bg-gray-100 text-foreground antialiased`}
       >
       
            <Navbar />

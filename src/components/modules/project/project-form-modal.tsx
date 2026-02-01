@@ -210,46 +210,93 @@ const fullscreenConfig = useMemo(
   /* -------------------------------------------------------------------------- */
   /*                                  SUBMIT                                    */
   /* -------------------------------------------------------------------------- */
-  const handleSubmit = async () => {
-    if (!form.name?.trim()) {
-      toast.error("Project name is required")
-      return
-    }
+  // const handleSubmit = async () => {
+  //   if (!form.name?.trim()) {
+  //     toast.error("Project name is required")
+  //     return
+  //   }
 
-    try {
-      const fd = new FormData()
+  //   try {
+  //     const fd = new FormData()
 
-      fd.append("name", form.name)
-      fd.append("title", form.title ?? "")
-      fd.append("technology", form.technology ?? "")
-      fd.append("category", form.category)
-      fd.append("description", description)
+  //     fd.append("name", form.name)
+  //     fd.append("title", form.title ?? "")
+  //     fd.append("technology", form.technology ?? "")
+  //     fd.append("category", form.category)
+  //     fd.append("description", description)
 
-      if (form.liveSiteUrl) fd.append("liveSiteUrl", form.liveSiteUrl)
-      if (form.githubFrontendUrl)
-        fd.append("githubFrontendUrl", form.githubFrontendUrl)
-      if (form.githubBackendUrl)
-        fd.append("githubBackendUrl", form.githubBackendUrl)
+  //     if (form.liveSiteUrl) fd.append("liveSiteUrl", form.liveSiteUrl)
+  //     if (form.githubFrontendUrl)
+  //       fd.append("githubFrontendUrl", form.githubFrontendUrl)
+  //     if (form.githubBackendUrl)
+  //       fd.append("githubBackendUrl", form.githubBackendUrl)
 
-      images.forEach((img) => fd.append("images", img))
+  //     images.forEach((img) => fd.append("images", img))
 
-      if (removedImages.length > 0) {
-        removedImages.forEach((url) =>
-          fd.append("removedImages[]", url),
-        )
-      }
+  //     if (removedImages.length > 0) {
+  //       removedImages.forEach((url) =>
+  //         fd.append("removedImages[]", url),
+  //       )
+  //     }
 
-      project?.id
-        ? await updateProject({ id: project.id, data: fd }).unwrap()
-        : await createProject(fd).unwrap()
+  //     project?.id
+  //       ? await updateProject({ id: project.id, data: fd }).unwrap()
+  //       : await createProject(fd).unwrap()
 
-      toast.success("Project saved successfully")
-      onClose()
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to save project")
-    }
+  //     toast.success("Project saved successfully")
+  //     onClose()
+  //   } catch (err: any) {
+  //     toast.error(err?.data?.message || "Failed to save project")
+  //   }
+  // }
+const handleSubmit = async () => {
+  if (!form.name?.trim()) {
+    toast.error("Project name is required")
+    return
   }
 
+  try {
+    const fd = new FormData();
+
+fd.append("name", form.name.trim());
+
+// Only append if value exists (even empty string is ok for clear)
+if (form.title !== undefined && form.title !== null) {
+  fd.append("title", (form.title ?? "").trim());
+}
+if (form.technology !== undefined && form.technology !== null) {
+  fd.append("technology", (form.technology ?? "").trim());
+}
+fd.append("category", form.category);
+fd.append("description", description.trim() || "");  // allow empty
+
+// URLs - send even if empty (to allow clearing)
+fd.append("liveSiteUrl", (form.liveSiteUrl ?? "").trim());
+fd.append("githubFrontendUrl", (form.githubFrontendUrl ?? "").trim());
+fd.append("githubBackendUrl", (form.githubBackendUrl ?? "").trim());
+
+    // New uploaded images
+    images.forEach((img) => fd.append("images", img))
+
+    // Images to remove from Cloudinary + DB
+    removedImages.forEach((url) => fd.append("removedImages[]", url))
+
+    // ────────────────────────────────────────────────
+    //   VERY IMPORTANT → DO **NOT** send isActive / isFavorite
+    //   from the edit modal at all!
+    //   They should only be changed via table switches
+    // ────────────────────────────────────────────────
+
+    project?.id
+      ? await updateProject({ id: project.id, data: fd }).unwrap()
+      : await createProject(fd).unwrap()
+
+    toast.success(project?.id ? "Project updated" : "Project created")
+    onClose()
+  } catch (err: any) {
+    toast.error(err?.data?.message || "Failed to save project")
+  }
+}
   /* -------------------------------------------------------------------------- */
   /*                                    UI                                      */
   /* -------------------------------------------------------------------------- */

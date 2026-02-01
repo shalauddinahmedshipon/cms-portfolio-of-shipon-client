@@ -143,61 +143,60 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   }
 }
 
-// Get all projects with pagination and filters
 export async function getProjects(params?: {
   page?: number;
   limit?: number;
-  search?: string;
   category?: "LEARNING" | "LIVE";
-  isActive?: boolean;
   isFavorite?: boolean;
 }): Promise<ProjectsResponse> {
   try {
     const queryParams = new URLSearchParams();
-    
-    if (params?.page) queryParams.append("page", params.page.toString());
-    if (params?.limit) queryParams.append("limit", params.limit.toString());
-    if (params?.search) queryParams.append("search", params.search);
-    if (params?.category) queryParams.append("category", params.category);
-    if (params?.isActive !== undefined) queryParams.append("isActive", params.isActive.toString());
-    if (params?.isFavorite !== undefined) queryParams.append("isFavorite", params.isFavorite.toString());
 
-    const res = await fetch(`${API_URL}/project?${queryParams.toString()}`, {
-      cache:"no-store",
-    });
+    queryParams.set("page", String(params?.page ?? 1));
+    queryParams.set("limit", String(params?.limit ?? 12));
 
-    if (!res.ok) {
-      throw new Error("Failed to fetch projects");
+    if (params?.category) {
+      queryParams.set("category", params.category);
     }
+
+    if (params?.isFavorite !== undefined) {
+      queryParams.set("isFavorite", String(params.isFavorite));
+    }
+
+    // 🔑 IMPORTANT: public site should show ACTIVE projects only
+    queryParams.set("isActive", "true");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/project?${queryParams.toString()}`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch projects");
 
     const response = await res.json();
-    
-    if (response.success && response.data) {
-      return response.data;
-    }
+
+    // ✅ SAME NORMALIZATION AS ADMIN PANEL
+    const innerData = response?.data?.data || [];
+    const innerMeta = response?.data?.meta || {
+      page: 1,
+      limit: 12,
+      total: innerData.length,
+      totalPages: 1,
+    };
 
     return {
-      data: [],
-      meta: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0,
-      },
+      data: innerData,
+      meta: innerMeta,
     };
   } catch (error) {
     console.error("Error fetching projects:", error);
     return {
       data: [],
-      meta: {
-        page: 1,
-        limit: 10,
-        total: 0,
-        totalPages: 0,
-      },
+      meta: { page: 1, limit: 12, total: 0, totalPages: 0 },
     };
   }
 }
+
 
 
 // Get single project by id
