@@ -20,3 +20,28 @@ export interface Event {
   updatedAt: string;
 }
 
+export interface AppEvent {           // ← changed name
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  location: string;
+  eventDate: string;                  // ISO string
+  eventType: 'CONFERENCE' | 'WORKSHOP' | 'MEETUP' | 'WEBINAR' | 'CONTEST' | 'HACKATHON';
+  serialNo?: number;
+  isActive: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+  images: string[];
+}
+
+export interface EventsResponse {
+  data: AppEvent[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}

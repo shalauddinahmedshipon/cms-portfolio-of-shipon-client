@@ -1,3 +1,4 @@
+import FeaturedEventsSection from "@/components/modules/event/FeaturedEventsSection";
 import AboutSection from "@/components/modules/home/AboutSection";
 import AchievementSection from "@/components/modules/home/AchievementSection";
 import CodingProfileSection from "@/components/modules/home/CodingProfileSection";
@@ -8,7 +9,7 @@ import Footer from "@/components/modules/home/Footer";
 import HeroSection from "@/components/modules/home/HeroSection";
 import HomeGallery from "@/components/modules/home/HomeGallery";
 import SkillSection from "@/components/modules/home/SkillSection";
-import { getAchievements, getCodingProfiles, getEducation, getExperiences, getFeaturedProjects, getProfile, getSkills } from "@/lib/api";
+import { getAchievements, getCodingProfiles, getEducation, getExperiences, getFeaturedEvents, getFeaturedProjects, getProfile, getSkills } from "@/lib/api";
 
 
 
@@ -21,6 +22,8 @@ export default async function HomePage() {
     const achievements = await getAchievements();
     const education = await getEducation()
       const featuredProjects = await getFeaturedProjects();
+      const featuredEvents = await getFeaturedEvents(6);
+
 
 
   return (
@@ -63,7 +66,7 @@ export default async function HomePage() {
 
         {/* Featured Events (2-3) */}
         <section className="mt-8">
-          
+        <FeaturedEventsSection events={featuredEvents} />
         </section>
 
         {/* Featured Blogs (2-3) */}

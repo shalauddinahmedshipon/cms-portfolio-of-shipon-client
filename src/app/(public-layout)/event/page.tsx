@@ -1,11 +1,10 @@
-import React from 'react';
+import EventsClient from "@/components/modules/event/EventsClient";
 
-const EventPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+export const metadata = {
+  title: "Events",
+  description: "Upcoming and past events, workshops, hackathons, meetups",
 };
 
-export default EventPage;
+export default function EventsPage() {
+  return <EventsClient />;
+}

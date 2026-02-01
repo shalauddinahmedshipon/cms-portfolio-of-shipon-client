@@ -63,7 +63,7 @@ export default function AboutSection({ bio, contactInfo }: AboutSectionProps) {
           <div className={shouldShowBio ? "mt-10 pt-6 border-t" : "mt-2"}>
             
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center justify-between">
+            <div className="flex flex-col gap-4 md:flex-row sm:flex-wrap sm:items-center justify-between">
              
 
               {/* WhatsApp / Phone - shows real number */}

@@ -1,10 +1,11 @@
 import { Achievement } from "@/types/achievement";
 import { ProjectsResponse } from "@/types/api.response.types";
+import { AppEvent, EventsResponse } from "@/types/event.types";
 import { Experience } from "@/types/experience.types";
 import { CodingProfile } from "@/types/profile.types";
 import { Project } from "@/types/project.types";
 import { SkillCategory } from "@/types/skill.types";
-import { cache } from "react";
+
 
 export async function getProfile() {
   try {
@@ -221,3 +222,90 @@ export async function getProjectById(id: string) {
 }
 
 
+export async function getEvents(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  eventType?: string;
+  isActive?: boolean;
+  isFavorite?: boolean;
+}): Promise<EventsResponse> {
+  try {
+    const query = new URLSearchParams();
+
+    query.set("page",  String(params?.page  ?? 1));
+    query.set("limit", String(params?.limit ?? 12));
+
+    if (params?.search)     query.set("search",    params.search);
+    if (params?.eventType)  query.set("eventType", params.eventType);
+    if (params?.isActive !== undefined) query.set("isActive",   String(params.isActive));
+    if (params?.isFavorite !== undefined) query.set("isFavorite", String(params.isFavorite));
+
+    // Public frontend → only show active events by default
+    if (params?.isActive === undefined) {
+      query.set("isActive", "true");
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/event?${query.toString()}`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch events");
+
+    const json = await res.json();
+
+    // Normalize shape (same pattern as your projects)
+    const innerData = json?.data?.data || [];
+    const innerMeta = json?.data?.meta || {
+      page: 1,
+      limit: 12,
+      total: innerData.length,
+      totalPages: 1,
+    };
+
+    return {
+      data: innerData,
+      meta: innerMeta,
+    };
+  } catch (err) {
+    console.error("getEvents error:", err);
+    return { data: [], meta: { page: 1, limit: 12, total: 0, totalPages: 0 } };
+  }
+}
+
+export async function getEventById(id: string): Promise<AppEvent | null> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/event/${id}`,
+      { cache: "no-store" }
+    );
+    
+
+    const json = await res.json();
+    console.log(json);
+    console.log("[getEventById] Status:", res.status);
+console.log("[getEventById] Response body:", JSON.stringify(json, null, 2));
+    if (!res.ok || !json.success) return null;
+
+    return json.data ?? null;
+  } catch (err) {
+    console.error("getEventById error:", err);
+    return null;
+  }
+}
+
+// Optional: for home page featured events
+export async function getFeaturedEvents(limit = 6): Promise<AppEvent[]> {
+  try {
+    const res = await getEvents({
+      isFavorite: true,
+      isActive: true,
+      limit,
+    });
+
+    return res.data;
+  } catch {
+    return [];
+  }
+}
