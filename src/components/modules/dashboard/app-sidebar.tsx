@@ -29,9 +29,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
-  const { data: profile, isLoading } = useGetProfileQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  })
+
+const { data: profile, isLoading } = useGetProfileQuery(undefined, {
+  skip: !isAuthenticated,
+  refetchOnMountOrArgChange: true,
+});
+
 
   // Always call hooks first to avoid "fewer hooks" error
   const data = React.useMemo(() => {

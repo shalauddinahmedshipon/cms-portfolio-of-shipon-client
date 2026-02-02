@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/event", label: "Events" },
   { href: "/blog", label: "Post" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export default function Navbar() {

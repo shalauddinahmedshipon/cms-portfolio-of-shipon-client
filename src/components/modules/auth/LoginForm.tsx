@@ -25,14 +25,27 @@ import {
 
 import { loginSchema, LoginInput } from "@/lib/validations/auth.schema";
 import { useLoginMutation } from "@/store/api/auth.api";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setCredentials } from "@/store/slices/auth.slice";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export default function LoginForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
+
+   const { accessToken, isAuthenticated } = useAppSelector(
+    (state) => state.auth
+  );
+
+   useEffect(() => {
+    if (accessToken || isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [accessToken, isAuthenticated, router]);
+
+
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -42,26 +55,23 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit = async (values: LoginInput) => {
-    try {
-      const res = await login(values).unwrap();
+ const onSubmit = async (values: LoginInput) => {
+  try {
+    const res = await login(values).unwrap();
 
-      dispatch(
-        setCredentials({
-          user: res.user,
-        })
-      );
+    dispatch(
+      setCredentials({
+        user: res.user,
+        accessToken: res.accessToken,
+      })
+    );
 
-     toast.success("Login successful");
-
-
-      router.push("/dashboard");
-    } catch (err: any) {
-
-  toast.error(err?.data?.message ?? "Invalid credentials");
-
-    }
-  };
+    toast.success("Login successful");
+    router.push("/dashboard");
+  } catch (err: any) {
+    toast.error(err?.data?.message ?? "Invalid credentials");
+  }
+};
 
   return (
     <Card className="w-full max-w-md shadow-xl border-muted">
