@@ -1,11 +1,11 @@
-import React from 'react';
+// app/blog/page.tsx
+import BlogsClient from "@/components/modules/blog/BlogsClient";
 
-const BlogPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+export const metadata = {
+  title: "Blog",
+  description: "Articles, tutorials, news and thoughts about programming, technology and more",
 };
 
-export default BlogPage;
+export default function BlogPage() {
+  return <BlogsClient />;
+}

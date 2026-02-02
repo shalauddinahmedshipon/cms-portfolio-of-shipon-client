@@ -9,6 +9,7 @@ import { ProjectsResponse } from "@/types/api.response.types";
 import { cn } from "@/lib/utils";
 import { getProjects } from "@/lib/api";
 import ProjectsSkeleton from "./ProjectSkeleton";
+import EventsSkeleton from "../event/EventsSkeleton";
 
 export default function ProjectsClient() {
   const router = useRouter();

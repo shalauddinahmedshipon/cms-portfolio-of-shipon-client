@@ -1,5 +1,6 @@
 import { Achievement } from "@/types/achievement";
 import { ProjectsResponse } from "@/types/api.response.types";
+import { Blog, BlogsResponse } from "@/types/blog.types";
 import { AppEvent, EventsResponse } from "@/types/event.types";
 import { Experience } from "@/types/experience.types";
 import { CodingProfile } from "@/types/profile.types";
@@ -304,6 +305,92 @@ export async function getFeaturedEvents(limit = 6): Promise<AppEvent[]> {
       limit,
     });
 
+    return res.data;
+  } catch {
+    return [];
+  }
+}
+
+
+// ────────────────────────────────────────────────
+// Blog related fetchers
+// ────────────────────────────────────────────────
+
+export async function getBlogs(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: Blog["category"];
+  isActive?: boolean;
+  isFeatured?: boolean;
+}): Promise<BlogsResponse> {
+  try {
+    const query = new URLSearchParams();
+
+    query.set("page",  String(params?.page  ?? 1));
+    query.set("limit", String(params?.limit ?? 10));
+
+    if (params?.search)    query.set("search",    params.search);
+    if (params?.category)  query.set("category",  params.category);
+    if (params?.isActive !== undefined) query.set("isActive",   String(params.isActive));
+    if (params?.isFeatured !== undefined) query.set("isFeatured", String(params.isFeatured));
+
+    // Public frontend → only show active blogs by default
+    if (params?.isActive === undefined) {
+      query.set("isActive", "true");
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/blog?${query.toString()}`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch blogs");
+
+    const json = await res.json();
+
+    const innerData = json?.data?.data || [];
+    const innerMeta = json?.data?.meta || {
+      page: 1,
+      limit: 10,
+      total: innerData.length,
+      totalPages: 1,
+    };
+
+    return {
+      data: innerData,
+      meta: innerMeta,
+    };
+  } catch (err) {
+    console.error("getBlogs error:", err);
+    return { data: [], meta: { page: 1, limit: 10, total: 0, totalPages: 0 } };
+  }
+}
+
+export async function getBlogById(id: string): Promise<Blog | null> {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/blog/${id}`,
+      { cache: "no-store" }
+    );
+
+    const json = await res.json();
+    if (!res.ok || !json.success) return null;
+
+    return json.data ?? null;
+  } catch (err) {
+    console.error("getBlogById error:", err);
+    return null;
+  }
+}
+
+export async function getFeaturedBlogs(limit = 6): Promise<Blog[]> {
+  try {
+    const res = await getBlogs({
+      isFeatured: true,
+      isActive: true,
+      limit,
+    });
     return res.data;
   } catch {
     return [];

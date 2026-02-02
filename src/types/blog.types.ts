@@ -12,4 +12,15 @@ export type Blog = {
 };
 
 
+export interface BlogsResponse {
+  data: Blog[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+
 
