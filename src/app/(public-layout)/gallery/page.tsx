@@ -1,11 +1,11 @@
-import React from 'react';
+// app/gallery/page.tsx
+import GalleryClient from "@/components/modules/gallery/GalleryClient";
 
-const GalleryPage = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+export const metadata = {
+  title: "Gallery",
+  description: "Moments, projects, events, and memories captured in photos",
 };
 
-export default GalleryPage;
+export default function GalleryPage() {
+  return <GalleryClient />;
+}

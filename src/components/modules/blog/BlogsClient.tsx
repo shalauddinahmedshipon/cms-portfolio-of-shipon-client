@@ -80,7 +80,7 @@ export default function BlogsClient() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-6xl mx-auto px-4 py-20">
-        <h1 className="text-3xl font-semibold tracking-tight mb-10">Blog</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mb-10">Post</h1>
 
         {/* Category Tabs */}
         <div className="mb-10 border-b">

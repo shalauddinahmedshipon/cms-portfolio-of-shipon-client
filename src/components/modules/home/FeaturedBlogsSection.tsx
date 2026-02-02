@@ -41,7 +41,7 @@ export default function FeaturedBlogsSection({ blogs }: Props) {
       <CardContent className="pt-6 md:pt-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Latest Articles
+            Latest Post
           </h2>
           <Link
             href="/blog"

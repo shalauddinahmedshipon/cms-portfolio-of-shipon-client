@@ -3,6 +3,7 @@ import { ProjectsResponse } from "@/types/api.response.types";
 import { Blog, BlogsResponse } from "@/types/blog.types";
 import { AppEvent, EventsResponse } from "@/types/event.types";
 import { Experience } from "@/types/experience.types";
+import { GalleryResponse } from "@/types/gallery.types";
 import { CodingProfile } from "@/types/profile.types";
 import { Project } from "@/types/project.types";
 import { SkillCategory } from "@/types/skill.types";
@@ -394,5 +395,48 @@ export async function getFeaturedBlogs(limit = 6): Promise<Blog[]> {
     return res.data;
   } catch {
     return [];
+  }
+}
+
+
+
+// ────────────────────────────────────────────────
+// Gallery
+// ────────────────────────────────────────────────
+
+export async function getGallery(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<GalleryResponse> {
+  try {
+    const query = new URLSearchParams();
+
+    query.set("page",  String(params?.page  ?? 1));
+    query.set("limit", String(params?.limit ?? 12));
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/gallery?${query.toString()}`,
+      { cache: "no-store" }
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch gallery");
+
+    const json = await res.json();
+
+    const innerData = json?.data?.data || [];
+    const innerMeta = json?.data?.meta || {
+      page: 1,
+      limit: 12,
+      total: innerData.length,
+      totalPages: 1,
+    };
+
+    return {
+      data: innerData,
+      meta: innerMeta,
+    };
+  } catch (err) {
+    console.error("getGallery error:", err);
+    return { data: [], meta: { page: 1, limit: 12, total: 0, totalPages: 0 } };
   }
 }
