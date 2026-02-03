@@ -207,48 +207,7 @@ const fullscreenConfig = useMemo(
     if (!open) setIsEditorFullscreen(false)
   }, [open])
 
-  /* -------------------------------------------------------------------------- */
-  /*                                  SUBMIT                                    */
-  /* -------------------------------------------------------------------------- */
-  // const handleSubmit = async () => {
-  //   if (!form.name?.trim()) {
-  //     toast.error("Project name is required")
-  //     return
-  //   }
-
-  //   try {
-  //     const fd = new FormData()
-
-  //     fd.append("name", form.name)
-  //     fd.append("title", form.title ?? "")
-  //     fd.append("technology", form.technology ?? "")
-  //     fd.append("category", form.category)
-  //     fd.append("description", description)
-
-  //     if (form.liveSiteUrl) fd.append("liveSiteUrl", form.liveSiteUrl)
-  //     if (form.githubFrontendUrl)
-  //       fd.append("githubFrontendUrl", form.githubFrontendUrl)
-  //     if (form.githubBackendUrl)
-  //       fd.append("githubBackendUrl", form.githubBackendUrl)
-
-  //     images.forEach((img) => fd.append("images", img))
-
-  //     if (removedImages.length > 0) {
-  //       removedImages.forEach((url) =>
-  //         fd.append("removedImages[]", url),
-  //       )
-  //     }
-
-  //     project?.id
-  //       ? await updateProject({ id: project.id, data: fd }).unwrap()
-  //       : await createProject(fd).unwrap()
-
-  //     toast.success("Project saved successfully")
-  //     onClose()
-  //   } catch (err: any) {
-  //     toast.error(err?.data?.message || "Failed to save project")
-  //   }
-  // }
+ 
 const handleSubmit = async () => {
   if (!form.name?.trim()) {
     toast.error("Project name is required")

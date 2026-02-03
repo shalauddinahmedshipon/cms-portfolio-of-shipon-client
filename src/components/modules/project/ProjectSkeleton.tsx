@@ -2,7 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ProjectsSkeleton({ count = 8 }: { count?: number }) {
+export default function ProjectsSkeleton({ count = 12 }: { count?: number }) {
   return (
     <div className="min-h-[300px] max-w-6xl mx-auto">
       {/* Header skeleton */}

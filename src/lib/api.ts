@@ -11,9 +11,9 @@ import { SkillCategory } from "@/types/skill.types";
 
 export async function getProfile() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`, {
-      cache: "no-store",
-    });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile`,{
+        next: { revalidate: 3600 }, // revalidate every 1 hour
+      });
 
     if (!res.ok) {
       console.error("Profile fetch failed", res.status);
@@ -31,7 +31,7 @@ export async function getProfile() {
 export async function getExperiences(): Promise<Experience[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/experience`, {
-      cache: "no-store",
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -50,7 +50,7 @@ export async function getExperiences(): Promise<Experience[]> {
 export async function getSkills(): Promise<SkillCategory[]> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/skill/categories`, {
-      cache: "no-store",
+     next: { revalidate: 3600 },
     });
 
     if (!res.ok) {
@@ -71,7 +71,7 @@ export async function getCodingProfiles(): Promise<CodingProfile[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/profile/coding-profiles`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 }, }
     );
 
     if (!res.ok) {
@@ -91,7 +91,7 @@ export async function getAchievements(): Promise<Achievement[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/achievements`,
-      { cache: "no-store" }
+      {next: { revalidate: 3600 }, }
     );
 
     if (!res.ok) {
@@ -110,7 +110,7 @@ export async function getAchievements(): Promise<Achievement[]> {
 export async function getEducation() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/education`,
-    { cache: "no-store" }
+    { next: { revalidate: 3600 },}
   )
   const json = await res.json()
   return json.data
@@ -125,7 +125,7 @@ export async function getFeaturedProjects(): Promise<Project[]> {
     const res = await fetch(
       `${API_URL}/project?isFavorite=true&isActive=true&limit=100`,
       {
-        next: { revalidate: 60 }, // Revalidate every 60 seconds
+       next: { revalidate: 3600 },// Revalidate every 60 seconds
       }
     );
 
@@ -171,7 +171,7 @@ export async function getProjects(params?: {
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/project?${queryParams.toString()}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 },}
     );
 
     if (!res.ok) throw new Error("Failed to fetch projects");
@@ -207,7 +207,7 @@ export async function getProjectById(id: string) {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/project/${id}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 },}
     );
 
     const json = await res.json();
@@ -250,7 +250,7 @@ export async function getEvents(params?: {
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/event?${query.toString()}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 },}
     );
 
     if (!res.ok) throw new Error("Failed to fetch events");
@@ -280,7 +280,7 @@ export async function getEventById(id: string): Promise<AppEvent | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/event/${id}`,
-      { cache: "no-store" }
+      {next: { revalidate: 3600 },}
     );
     
 
@@ -343,7 +343,7 @@ export async function getBlogs(params?: {
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/blog?${query.toString()}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 }}
     );
 
     if (!res.ok) throw new Error("Failed to fetch blogs");
@@ -372,7 +372,7 @@ export async function getBlogById(id: string): Promise<Blog | null> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/blog/${id}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 },}
     );
 
     const json = await res.json();
@@ -416,7 +416,7 @@ export async function getGallery(params?: {
 
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/gallery?${query.toString()}`,
-      { cache: "no-store" }
+      { next: { revalidate: 3600 },}
     );
 
     if (!res.ok) throw new Error("Failed to fetch gallery");
