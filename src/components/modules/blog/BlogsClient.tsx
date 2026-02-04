@@ -66,7 +66,7 @@ export default function BlogsClient() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container max-w-6xl mx-auto px-4 py-10">
+        <div className="container max-w-6xl mx-auto px-4 py-20">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array(9).fill(0).map((_, i) => (
               <div key={i} className="h-96 rounded-xl bg-muted/50 animate-pulse" />

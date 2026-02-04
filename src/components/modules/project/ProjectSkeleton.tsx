@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProjectsSkeleton({ count = 12 }: { count?: number }) {
   return (
-    <div className="min-h-[300px] max-w-6xl mx-auto">
+    <div className="min-h-screen max-w-6xl mx-auto bg-background px-4 py-10">
       {/* Header skeleton */}
       <div className="mb-10 space-y-2">
         <Skeleton className="h-8 w-48" />

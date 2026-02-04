@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { getEvents } from "@/lib/api";
 import EventCard from "./EventCard";
 import EventsSkeleton from "./EventsSkeleton";
-// import EventsSkeleton from "./EventSkeleton";   // ← create if needed
+
 
 const TABS = ["ALL", "CONFERENCE", "WORKSHOP", "MEETUP", "WEBINAR", "CONTEST", "HACKATHON", "FAVORITES"] as const;
 type Tab = typeof TABS[number];
